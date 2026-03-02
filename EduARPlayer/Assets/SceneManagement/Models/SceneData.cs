@@ -1,0 +1,16 @@
+using System;
+using System.Collections.Generic;
+using Firebase.Firestore;
+
+namespace Assets.SceneManagement.Models {
+    [Serializable]
+    [FirestoreData]
+    public class SceneData {
+        [FirestoreProperty] public string name { get; set; }
+        [FirestoreProperty] public int index { get; set; }
+        [FirestoreProperty] public string description { get; set; }
+        [FirestoreProperty] public Dictionary<string, SceneLogicData> sceneLogic { get; set; }
+        [FirestoreProperty] public List<SceneMarkerData> markers { get; set; }
+        public List<ObjectData> objects;
+    }
+}

@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:keep="@string/firebase_database_url,@string/gcm_defaultSenderId,@string/google_storage_bucket,@string/project_id,@string/google_api_key,@string/google_crash_reporting_api_key,@string/google_app_id">
+  <string name="firebase_database_url" translatable="false">https://campuspulse0-default-rtdb.firebaseio.com</string>
+  <string name="gcm_defaultSenderId" translatable="false">91092596944</string>
+  <string name="google_storage_bucket" translatable="false">campuspulse0.firebasestorage.app</string>
+  <string name="project_id" translatable="false">campuspulse0</string>
+  <string name="google_api_key" translatable="false">AIzaSyDIUSfiVd_qu2lYKsjgK4pZZbC4rHvN82M</string>
+  <string name="google_crash_reporting_api_key" translatable="false">AIzaSyDIUSfiVd_qu2lYKsjgK4pZZbC4rHvN82M</string>
+  <string name="google_app_id" translatable="false">1:91092596944:android:4f11879c351376e21486d5</string>
+</resources>

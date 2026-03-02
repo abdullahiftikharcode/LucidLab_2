@@ -1,0 +1,130 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e4]:
+    - generic [ref=e7] [cursor=pointer]:
+      - heading "TestPlaywrightObject (cube)" [level=2] [ref=e8]
+      - generic [ref=e9]:
+        - group [ref=e10]:
+          - generic [ref=e11]: Position
+          - generic [ref=e12]:
+            - generic [ref=e13]:
+              - paragraph [ref=e14]: "X:"
+              - spinbutton "Position" [ref=e15]: "0"
+            - generic [ref=e16]:
+              - paragraph [ref=e17]: "Y:"
+              - spinbutton [ref=e18]: "0"
+            - generic [ref=e19]:
+              - paragraph [ref=e20]: "Z:"
+              - spinbutton [ref=e21]: "0"
+        - group [ref=e22]:
+          - generic [ref=e23]: Rotation
+          - generic [ref=e24]:
+            - generic [ref=e25]:
+              - paragraph [ref=e26]: "X:"
+              - spinbutton "Rotation" [ref=e27]: "0"
+            - generic [ref=e28]:
+              - paragraph [ref=e29]: "Y:"
+              - spinbutton [ref=e30]: "0"
+            - generic [ref=e31]:
+              - paragraph [ref=e32]: "Z:"
+              - spinbutton [ref=e33]: "0"
+        - group [ref=e34]:
+          - generic [ref=e35]: Scale
+          - generic [ref=e36]:
+            - generic [ref=e37]:
+              - paragraph [ref=e38]: "X:"
+              - spinbutton "Scale" [ref=e39]: "1"
+            - generic [ref=e40]:
+              - paragraph [ref=e41]: "Y:"
+              - spinbutton [ref=e42]: "1"
+            - generic [ref=e43]:
+              - paragraph [ref=e44]: "Z:"
+              - spinbutton [ref=e45]: "1"
+        - group [ref=e46]:
+          - generic [ref=e47]: Color
+          - generic [ref=e51]:
+            - generic [ref=e52]:
+              - generic "#4D4D4D" [ref=e53]
+              - generic "#999999" [ref=e55]
+              - generic "#FFFFFF" [ref=e57]
+              - generic "#F44E3B" [ref=e59]
+              - generic "#FE9200" [ref=e61]
+              - generic "#FCDC00" [ref=e63]
+              - generic "#DBDF00" [ref=e65]
+              - generic "#A4DD00" [ref=e67]
+              - generic "#68CCCA" [ref=e69]
+              - generic "#73D8FF" [ref=e71]
+              - generic "#AEA1FF" [ref=e73]
+              - generic "#FDA1FF" [ref=e75]
+              - generic "#333333" [ref=e77]
+              - generic "#808080" [ref=e79]
+              - generic "#cccccc" [ref=e81]
+              - generic "#D33115" [ref=e83]
+              - generic "#E27300" [ref=e85]
+              - generic "#FCC400" [ref=e87]
+              - generic "#B0BC00" [ref=e89]
+              - generic "#68BC00" [ref=e91]
+              - generic "#16A5A5" [ref=e93]
+              - generic "#009CE0" [ref=e95]
+              - generic "#7B64FF" [ref=e97]
+              - generic "#FA28FF" [ref=e99]
+              - generic "#000000" [ref=e101]
+              - generic "#666666" [ref=e103]
+              - generic "#B3B3B3" [ref=e105]
+              - generic "#9F0500" [ref=e107]
+              - generic "#C45100" [ref=e109]
+              - generic "#FB9E00" [ref=e111]
+              - generic "#808900" [ref=e113]
+              - generic "#194D33" [ref=e115]
+              - generic "#0C797D" [ref=e117]
+              - generic "#0062B1" [ref=e119]
+              - generic "#653294" [ref=e121]
+              - generic "#AB149E" [ref=e123]
+            - generic [ref=e125]:
+              - textbox "hex" [ref=e128]: "#000000"
+              - generic [ref=e129]:
+                - textbox "r" [ref=e130]: "0"
+                - generic [ref=e131]: r
+              - generic [ref=e132]:
+                - textbox "g" [ref=e133]: "0"
+                - generic [ref=e134]: g
+              - generic [ref=e135]:
+                - textbox "b" [ref=e136]: "0"
+                - generic [ref=e137]: b
+        - group [ref=e138]:
+          - generic [ref=e139]: Others
+          - generic [ref=e140]:
+            - checkbox "Others Has Gravity" [ref=e141]
+            - generic [ref=e143]: Has Gravity
+          - generic [ref=e144]:
+            - checkbox "Is Grabable" [checked] [ref=e145]
+            - img [ref=e148]
+            - generic [ref=e150]: Is Grabable
+          - generic [ref=e151]:
+            - checkbox "Show Description" [ref=e152]
+            - generic [ref=e154]: Show Description
+        - button "Delete" [ref=e155]
+    - generic [ref=e158]:
+      - button "Hand Tool (Q)" [ref=e160] [cursor=pointer]:
+        - img [ref=e161]
+      - generic [ref=e163]:
+        - button "Move Tool (W)" [ref=e164] [cursor=pointer]:
+          - img [ref=e165]
+        - button "Rotate Tool (E)" [ref=e170] [cursor=pointer]:
+          - img [ref=e171]
+        - button "Scale Tool (R)" [ref=e174] [cursor=pointer]:
+          - img [ref=e175]
+        - button "Rect Tool (T)" [ref=e181] [cursor=pointer]:
+          - img [ref=e182]
+        - button "Transform Tool (Y)" [ref=e188] [cursor=pointer]:
+          - img [ref=e189]
+  - generic:
+    - region
+    - region
+    - region
+    - region
+    - region
+    - region
+```

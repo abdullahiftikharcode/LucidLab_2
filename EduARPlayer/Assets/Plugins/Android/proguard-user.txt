@@ -1,0 +1,20 @@
+-keep class com.google.firebase.** { *; }
+-keep interface com.google.firebase.** { *; }
+-keep class com.google.android.gms.** { *; }
+-keep interface com.google.android.gms.** { *; }
+-keep class com.google.unity.** { *; }
+-keep interface com.google.unity.** { *; }
+
+# Keep AR Foundation and XR related native bridges
+-keep class UnityEngine.XR.ARCore.** { *; }
+-keep class com.google.ar.core.** { *; }
+-keep interface com.google.ar.core.** { *; }
+
+# Keep all native methods
+-keepclasseswithmembernames class * {
+    native <methods>;
+}
+
+# Fix for JNI call to CallObjectMethodV failures
+-keep class com.google.firebase.app.UnityApp { *; }
+-keep class com.google.firebase.firestore.UnityFirestore { *; }

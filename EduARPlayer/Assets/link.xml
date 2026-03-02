@@ -1,0 +1,27 @@
+<linker>
+  <assembly fullname="Unity.XR.ARFoundation" preserve="all"/>
+  <assembly fullname="Unity.XR.ARSubsystems" preserve="all"/>
+  <assembly fullname="Unity.XR.ARCore" preserve="all"/>
+  <assembly fullname="Unity.XR.ARKit" preserve="all"/>
+  <assembly fullname="Unity.XR.Management" preserve="all"/>
+  <assembly fullname="Unity.XR.Interaction.Toolkit" preserve="all"/>
+  <assembly fullname="Unity.XR.CoreUtils" preserve="all"/>
+  <assembly fullname="UnityEngine.XR.ARFoundation" preserve="all"/>
+  <assembly fullname="UnityEngine.XR.ARSubsystems" preserve="all"/>
+  <assembly fullname="UnityEngine.AndroidJNIModule" preserve="all"/>
+  <assembly fullname="UnityEngine.AndroidModule" preserve="all"/>
+  <assembly fullname="UnityEngine.CoreModule" preserve="all"/>
+  <assembly fullname="UnityEngine.UIModule" preserve="all"/>
+  <assembly fullname="UnityEngine.TextRenderingModule" preserve="all"/>
+  <assembly fullname="UnityEngine.UnityWebRequestModule" preserve="all"/>
+  <assembly fullname="UnityEngine.JSONSerializeModule" preserve="all"/>
+  <assembly fullname="Firebase.App" preserve="all"/>
+  <assembly fullname="Firebase.Firestore" preserve="all"/>
+  <assembly fullname="Firebase.Storage" preserve="all"/>
+  <assembly fullname="Firebase.Auth" preserve="all"/>
+  <assembly fullname="Firebase.Analytics" preserve="all"/>
+  <assembly fullname="Firebase.TaskExtension" preserve="all"/>
+  <assembly fullname="Firebase.Platform" preserve="all"/>
+  <assembly fullname="Firebase.App.Internal" preserve="all"/>
+  <assembly fullname="mscorlib" preserve="all"/>
+</linker>
