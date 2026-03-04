@@ -16,6 +16,8 @@ namespace Assets.Interaction {
         private Vector3 _designerLocalPosition;
         private Quaternion _designerLocalRotation;
         private Vector3 _designerLocalScale;
+        private bool _isVisible = false;
+        private bool _isLocked = false;
         void Start() {
             // Capture designer-assigned transforms before any AR manipulation
             _designerLocalPosition = transform.localPosition;
@@ -42,13 +44,36 @@ namespace Assets.Interaction {
             ARExperimentManager.OnMarkerLost -= HandleMarkerLost;
         }
 
+        public void LockInPlace() {
+            if (!_isVisible) return; // Only lock if it is currently visible based on marker
+            
+            _isLocked = true;
+            transform.SetParent(null, true);
+        }
+
+        public void Unlock() {
+            _isLocked = false;
+            
+            // If unlocked, revert to tracking logic
+            if (!string.IsNullOrEmpty(markerId) &&
+                ARExperimentManager.MarkerTransforms.TryGetValue(markerId, out var markerTransform)) {
+                AttachTo(markerTransform);
+            } else {
+                SetVisible(false);
+            }
+        }
+
         private void HandleMarkerTracked(string id, Transform markerTransform) {
+            if (_isLocked) return;
+
             if (id == markerId) {
                 AttachTo(markerTransform);
             }
         }
 
         private void HandleMarkerLost(string id) {
+            if (_isLocked) return;
+
             if (id == markerId) {
                 SetVisible(false);
             }
@@ -67,6 +92,7 @@ namespace Assets.Interaction {
         }
 
         private void SetVisible(bool visible) {
+            _isVisible = visible;
             foreach (var r in GetComponentsInChildren<Renderer>(true)) {
                 r.enabled = visible;
             }

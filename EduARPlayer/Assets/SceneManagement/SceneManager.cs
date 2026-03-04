@@ -63,8 +63,8 @@ namespace Assets.SceneManagement {
         }
 
         private void OnMarkerLost(string markerId) {
-            // Pause logic when no markers are being tracked
-            if (ARExperimentManager.MarkerTransforms.Count == 0 && logicManager.HasStartedExecuting) {
+            // Pause logic when no markers are being tracked and not locked
+            if (!ARLockManager.IsLocked && ARExperimentManager.MarkerTransforms.Count == 0 && logicManager.HasStartedExecuting) {
                 logicManager.PauseExecuting();
             }
         }
@@ -86,7 +86,7 @@ namespace Assets.SceneManagement {
         void Update() {
             if (!_sceneReady || currentScene == null) return;
 
-            bool hasActiveMarkers = ARExperimentManager.MarkerTransforms.Count > 0;
+            bool hasActiveMarkers = ARExperimentManager.MarkerTransforms.Count > 0 || ARLockManager.IsLocked;
 
             // Start logic on first marker detection
             if (hasActiveMarkers && !_logicStartedOnce) {
