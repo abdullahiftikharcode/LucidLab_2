@@ -9,5 +9,6 @@
       </intent-filter>
       <meta-data android:name="unityplayer.UnityActivity" android:value="true" />
     </activity>
+    <meta-data android:name="com.google.ar.core" android:value="optional" />
   </application>
 </manifest>

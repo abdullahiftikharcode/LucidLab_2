@@ -30,10 +30,12 @@ namespace Assets.Interaction {
 
         [Header("State")]
         public bool isMarkerTracked;
+        public static bool IsPlanePlaced { get; private set; }
         private TrackingModeToggleUI.TrackingMode currentMode = TrackingModeToggleUI.TrackingMode.Marker;
 
         void Start() {
             IsLocked = false;
+            IsPlanePlaced = false;
             Debug.Log($"[ARLockManager] Start() — lockButton={lockButton != null}, buttonImage={buttonImage != null}, buttonText={buttonText != null}");
             if (lockButton != null) {
                 lockButton.onClick.AddListener(ToggleLock);
@@ -82,16 +84,24 @@ namespace Assets.Interaction {
             }
         }
 
+        public void SetPlanePlaced(bool placed) {
+            IsPlanePlaced = placed;
+            Debug.Log($"[ARLockManager] 📍 SetPlanePlaced — isPlanePlaced={IsPlanePlaced}");
+            UpdateUI();
+        }
+
         public void ToggleLock() {
             IsLocked = !IsLocked;
-            Debug.Log($"[ARLockManager] 🔒 ToggleLock — IsLocked={IsLocked}");
+            Debug.Log($"[ARLockManager] 🔒 ToggleLock — IsLocked={IsLocked}, Mode={currentMode}");
 
+            // In Marker Mode, enforce the lock state on all MarkerAnchors immediately
+            // In Plane Mode, MarkerAnchors are already isolated, so setting IsLocked is enough for ARModeManager to query.
             var anchors = FindObjectsOfType<MarkerAnchor>(true);
-            Debug.Log($"[ARLockManager] Found {anchors.Length} MarkerAnchor(s).");
             foreach (var anchor in anchors) {
                 if (IsLocked) anchor.LockInPlace();
                 else anchor.Unlock();
             }
+            
             UpdateUI();
         }
 
@@ -101,25 +111,30 @@ namespace Assets.Interaction {
                 return;
             }
 
-            if (currentMode == TrackingModeToggleUI.TrackingMode.Plane) {
-                lockButton.gameObject.SetActive(false); // Hide in Plane mode
-                return;
-            }
+            lockButton.gameObject.SetActive(true); // Always visible but state changes depending on mode
 
-            lockButton.gameObject.SetActive(true); // Always visible in Marker mode
-
-            if (IsLocked) {
-                ApplyLockAppearance();
-                lockButton.interactable = true;
-                Debug.Log("[ARLockManager] UI: LOCKED — red");
-            } else if (isMarkerTracked) {
-                ApplyUnlockAppearance();
-                lockButton.interactable = true;
-                Debug.Log("[ARLockManager] UI: UNLOCKED — green");
-            } else {
-                ApplyNoTrackAppearance();
-                lockButton.interactable = false;
-                Debug.Log("[ARLockManager] UI: NO TRACK — grey");
+            if (currentMode == TrackingModeToggleUI.TrackingMode.Marker) {
+                if (IsLocked) {
+                    ApplyLockAppearance();
+                    lockButton.interactable = true;
+                } else if (isMarkerTracked) {
+                    ApplyUnlockAppearance();
+                    lockButton.interactable = true;
+                } else {
+                    ApplyNoTrackAppearance();
+                    lockButton.interactable = false;
+                }
+            } else if (currentMode == TrackingModeToggleUI.TrackingMode.Plane) {
+                if (IsLocked) {
+                    ApplyLockAppearance();
+                    lockButton.interactable = true;
+                } else if (IsPlanePlaced) {
+                    ApplyUnlockAppearance();
+                    lockButton.interactable = true;
+                } else {
+                    ApplyNoTrackAppearance();
+                    lockButton.interactable = false;
+                }
             }
         }
 

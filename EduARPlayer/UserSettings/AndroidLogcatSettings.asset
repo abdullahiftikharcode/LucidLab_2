@@ -1,221 +1,107 @@
 {
-    "m_SelectedDeviceId": "R5CX13YGXCJ",
+    "m_SelectedDeviceId": "ZF6523HFKG",
     "m_SelectedProcess": {
-        "deviceId": "R5CX13YGXCJ",
+        "deviceId": "ZF6523HFKG",
         "name": "com.example.campuspulse",
-        "processId": 14434,
+        "processId": 12902,
         "exited": false
     },
     "m_SelectedPriority": 0,
     "m_KnownProcessesForSerialization": [
         {
             "deviceId": "3414636581000C3",
-            "name": "com.android.launcher3",
-            "processId": 2917,
-            "exited": false
-        },
-        {
-            "deviceId": "3414636581000C3",
-            "name": "com.example.campuspulse",
-            "processId": 5001,
-            "exited": true
-        },
-        {
-            "deviceId": "3414636581000C3",
-            "name": "com.example.campuspulse",
-            "processId": 5901,
-            "exited": true
-        },
-        {
-            "deviceId": "3414636581000C3",
-            "name": "com.example.campuspulse",
-            "processId": 9894,
-            "exited": true
-        },
-        {
-            "deviceId": "3414636581000C3",
-            "name": "com.example.campuspulse",
-            "processId": 12346,
-            "exited": true
-        },
-        {
-            "deviceId": "3414636581000C3",
             "name": "com.example.campuspulse",
             "processId": 12807,
-            "exited": false
+            "exited": true
         },
         {
             "deviceId": "3414636581000C3",
             "name": "com.example.campuspulse",
             "processId": 18083,
-            "exited": false
+            "exited": true
         },
         {
             "deviceId": "3414636581000C3",
             "name": "com.example.campuspulse",
             "processId": 18742,
-            "exited": false
-        },
-        {
-            "deviceId": "ZF6523HFKG",
-            "name": "com.example.campuspulse",
-            "processId": 13324,
             "exited": true
         },
         {
-            "deviceId": "ZF6523HFKG",
+            "deviceId": "3414636581000C3",
             "name": "com.example.campuspulse",
-            "processId": 14471,
+            "processId": 19893,
             "exited": true
-        },
-        {
-            "deviceId": "ZF6523HFKG",
-            "name": "com.example.campuspulse",
-            "processId": 17202,
-            "exited": true
-        },
-        {
-            "deviceId": "ZF6523HFKG",
-            "name": "com.example.campuspulse",
-            "processId": 24453,
-            "exited": true
-        },
-        {
-            "deviceId": "ZF6523HFKG",
-            "name": "com.example.campuspulse",
-            "processId": 28894,
-            "exited": false
-        },
-        {
-            "deviceId": "ZF6523HFKG",
-            "name": "com.example.campuspulse",
-            "processId": 4357,
-            "exited": false
-        },
-        {
-            "deviceId": "ZF6523HFKG",
-            "name": "com.example.campuspulse",
-            "processId": 8196,
-            "exited": false
-        },
-        {
-            "deviceId": "ZF6523HFKG",
-            "name": "com.example.campuspulse",
-            "processId": 29524,
-            "exited": false
-        },
-        {
-            "deviceId": "ZF6523HFKG",
-            "name": "com.example.campuspulse",
-            "processId": 31640,
-            "exited": false
-        },
-        {
-            "deviceId": "ZF6523HFKG",
-            "name": "com.example.campuspulse",
-            "processId": 1301,
-            "exited": false
-        },
-        {
-            "deviceId": "ZF6523HFKG",
-            "name": "com.example.campuspulse",
-            "processId": 2952,
-            "exited": false
-        },
-        {
-            "deviceId": "ZF6523HFKG",
-            "name": "com.example.campuspulse",
-            "processId": 24237,
-            "exited": false
-        },
-        {
-            "deviceId": "ZF6523HFKG",
-            "name": "com.example.campuspulse",
-            "processId": 5723,
-            "exited": false
-        },
-        {
-            "deviceId": "ZF6523HFKG",
-            "name": "com.example.campuspulse",
-            "processId": 9390,
-            "exited": false
-        },
-        {
-            "deviceId": "ZF6523HFKG",
-            "name": "com.example.campuspulse",
-            "processId": 13811,
-            "exited": false
-        },
-        {
-            "deviceId": "ZF6523HFKG",
-            "name": "com.example.campuspulse",
-            "processId": 15544,
-            "exited": false
-        },
-        {
-            "deviceId": "ZF6523HFKG",
-            "name": "com.example.campuspulse",
-            "processId": 16208,
-            "exited": false
-        },
-        {
-            "deviceId": "ZF6523HFKG",
-            "name": "com.example.campuspulse",
-            "processId": 17384,
-            "exited": false
-        },
-        {
-            "deviceId": "ZF6523HFKG",
-            "name": "com.example.campuspulse",
-            "processId": 19676,
-            "exited": false
-        },
-        {
-            "deviceId": "ZF6523HFKG",
-            "name": "com.example.campuspulse",
-            "processId": 12087,
-            "exited": false
-        },
-        {
-            "deviceId": "ZF6523HFKG",
-            "name": "com.example.campuspulse",
-            "processId": 13959,
-            "exited": false
-        },
-        {
-            "deviceId": "ZF6523HFKG",
-            "name": "com.example.campuspulse",
-            "processId": 18356,
-            "exited": false
-        },
-        {
-            "deviceId": "ZF6523HFKG",
-            "name": "com.example.campuspulse",
-            "processId": 20883,
-            "exited": false
         },
         {
             "deviceId": "ZF6523HFKG",
             "name": "com.example.campuspulse",
             "processId": 21842,
-            "exited": false
+            "exited": true
         },
         {
             "deviceId": "ZF6523HFKG",
             "name": "com.example.campuspulse",
             "processId": 25789,
-            "exited": false
+            "exited": true
         },
         {
             "deviceId": "ZF6523HFKG",
             "name": "com.example.campuspulse",
             "processId": 28013,
-            "exited": false
+            "exited": true
         },
         {
             "deviceId": "ZF6523HFKG",
             "name": "com.example.campuspulse",
             "processId": 28683,
+            "exited": true
+        },
+        {
+            "deviceId": "ZF6523HFKG",
+            "name": "com.example.campuspulse",
+            "processId": 21516,
+            "exited": false
+        },
+        {
+            "deviceId": "ZF6523HFKG",
+            "name": "com.example.campuspulse",
+            "processId": 27016,
+            "exited": false
+        },
+        {
+            "deviceId": "ZF6523HFKG",
+            "name": "com.example.campuspulse",
+            "processId": 32694,
+            "exited": false
+        },
+        {
+            "deviceId": "ZF6523HFKG",
+            "name": "com.example.campuspulse",
+            "processId": 6214,
+            "exited": false
+        },
+        {
+            "deviceId": "ZF6523HFKG",
+            "name": "com.example.campuspulse",
+            "processId": 10512,
+            "exited": false
+        },
+        {
+            "deviceId": "ZF6523HFKG",
+            "name": "com.example.campuspulse",
+            "processId": 14964,
+            "exited": false
+        },
+        {
+            "deviceId": "ZF6523HFKG",
+            "name": "com.example.campuspulse",
+            "processId": 22761,
+            "exited": false
+        },
+        {
+            "deviceId": "ZF6523HFKG",
+            "name": "com.example.campuspulse",
+            "processId": 12902,
             "exited": false
         },
         {
@@ -283,6 +169,24 @@
             "name": "com.example.campuspulse",
             "processId": 14434,
             "exited": false
+        },
+        {
+            "deviceId": "emulator-5554",
+            "name": "com.example.campuspulse",
+            "processId": 9593,
+            "exited": true
+        },
+        {
+            "deviceId": "emulator-5554",
+            "name": "com.example.campuspulse",
+            "processId": 10502,
+            "exited": true
+        },
+        {
+            "deviceId": "emulator-5554",
+            "name": "com.google.android.apps.nexuslauncher",
+            "processId": 997,
+            "exited": true
         }
     ],
     "m_Tags": {
@@ -377,5 +281,5 @@
             "exited": false
         }
     },
-    "m_AutoScroll": 1
+    "m_AutoScroll": 2
 }

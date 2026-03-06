@@ -49,9 +49,10 @@ namespace Assets.Interaction {
 
         public void Toggle() {
             TrackingMode newMode = CurrentMode == TrackingMode.Marker ? TrackingMode.Plane : TrackingMode.Marker;
-            CurrentMode = newMode;
 
             Debug.Log($"[TrackingToggle] Toggling from {CurrentMode} to {newMode}. Dispatching OnModeChanged Event...");
+
+            CurrentMode = newMode;
 
             if (_animCoroutine != null) StopCoroutine(_animCoroutine);
             _animCoroutine = StartCoroutine(AnimateToState(newMode));
