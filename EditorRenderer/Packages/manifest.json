@@ -51,6 +51,13 @@
       "scopes": [
         "com.atteneder"
       ]
+    },
+    {
+      "name": "Shtif Registry",
+      "url": "https://package.binaryego.com:4873",
+      "scopes": [
+        "com.shtif"
+      ]
     }
   ]
 }

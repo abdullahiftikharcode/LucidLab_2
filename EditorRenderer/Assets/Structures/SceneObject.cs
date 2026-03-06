@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -21,6 +21,7 @@ namespace Assets.Structures {
 
 
         private GameObject _gameObject = null;
+        private Dictionary<Renderer, Material> _colorMaterials;
 
         private bool IsPrimitiveObject() {
             return objectType is "cube" or "sphere" or "cylinder" or "capsule";
@@ -60,33 +61,54 @@ namespace Assets.Structures {
             UpdateRotation();
         }
 
+        private static Shader _cachedStandardShader = null;
+        private static Shader GetColorableShader() {
+            if (_cachedStandardShader != null) return _cachedStandardShader;
+            _cachedStandardShader = Shader.Find("Standard");
+            if (_cachedStandardShader == null) _cachedStandardShader = Shader.Find("Legacy Shaders/Diffuse");
+            if (_cachedStandardShader == null) _cachedStandardShader = Shader.Find("Unlit/Color");
+            Debug.Log($"[SceneObject] Resolved color shader: '{_cachedStandardShader?.name ?? "NULL"}'");
+            return _cachedStandardShader;
+        }
+
         public void UpdateColor() {
             if (!_gameObject) throw new Exception("InitGameobject first!");
 
-            if (ColorUtility.TryParseHtmlString(color, out Color clr)) {
-                Debug.Log($"[SceneObject] Updating color for {objectName} to {color}");
-                foreach (var renderer in _gameObject.GetComponentsInChildren<Renderer>()) {
-                    if (renderer.material != null) {
-                        // Standard built-in fallback
-                        renderer.material.color = clr; 
-                        
-                        // Try typical shader properties across different pipelines (Built-in, URP, GLTF)
-                        if (renderer.material.HasProperty("_Color")) {
-                            renderer.material.SetColor("_Color", clr);
-                        }
-                        if (renderer.material.HasProperty("_BaseColor")) {
-                            renderer.material.SetColor("_BaseColor", clr);
-                        }
-                        if (renderer.material.HasProperty("baseColorFactor")) { // Common in glTFast
-                            renderer.material.SetColor("baseColorFactor", clr);
-                        }
-                        if (renderer.material.HasProperty("_TintColor")) {
-                            renderer.material.SetColor("_TintColor", clr);
-                        }
+            if (!ColorUtility.TryParseHtmlString(color, out Color clr)) {
+                Debug.LogWarning($"[SceneObject] Invalid color string for '{objectName}': {color}");
+                return;
+            }
+
+            var renderers = _gameObject.GetComponentsInChildren<Renderer>();
+            Debug.Log($"[SceneObject] UpdateColor '{objectName}' ({objectType}) -> {color}, renderers={renderers.Length}");
+
+            if (_colorMaterials == null)
+                _colorMaterials = new Dictionary<Renderer, Material>();
+
+            foreach (var rend in renderers) {
+                if (rend == null) continue;
+
+                Material mat;
+                if (!_colorMaterials.TryGetValue(rend, out mat) || mat == null) {
+                    // Always create from a known-good shader, never copy from sharedMaterial
+                    // (sharedMaterial can be InternalErrorShader in WebGL if the original shader didn't compile)
+                    Shader shader = GetColorableShader();
+                    if (shader == null) {
+                        Debug.LogError($"[SceneObject] No usable shader found — cannot apply color to '{rend.gameObject.name}'");
+                        continue;
                     }
+                    mat = new Material(shader);
+                    mat.name = $"{objectName}_colorMat";
+                    _colorMaterials[rend] = mat;
+                    Debug.Log($"[SceneObject]   Created new material for '{rend.gameObject.name}' using shader='{shader.name}'");
                 }
-            } else {
-                Debug.LogWarning($"[SceneObject] Invalid color string: {color}");
+
+                mat.color = clr;
+                if (mat.HasProperty("_Color")) mat.SetColor("_Color", clr);
+                if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", clr);
+
+                rend.material = mat;
+                Debug.Log($"[SceneObject]   Assigned color {clr} to '{rend.gameObject.name}', mat='{mat.name}'");
             }
         }
 
@@ -119,6 +141,12 @@ namespace Assets.Structures {
         }
 
         public void Dispose() {
+            if (_colorMaterials != null) {
+                foreach (var mat in _colorMaterials.Values) {
+                    if (mat != null) UnityEngine.Object.Destroy(mat);
+                }
+                _colorMaterials.Clear();
+            }
             if (_gameObject != null) {
                 foreach (Transform child in _gameObject.transform) {
                     if (child != null) {

@@ -70,7 +70,19 @@ export default function SceneObjectComp({ sceneObject, isSelected, onSelect, mar
               <FormLabel>Color</FormLabel>
               <CompactPicker
                 color={sceneObject.object?.color}
-                onChange={e => sceneObject.setColor(e.hex)}
+                onChange={e => {
+                  console.log('[SceneObjectComp] CompactPicker onChange', {
+                    objectName: sceneObject.object?.objectName,
+                    hex: e.hex,
+                  });
+                  sceneObject.setColor(e.hex);
+                }}
+                onChangeComplete={e => {
+                  console.log('[SceneObjectComp] CompactPicker onChangeComplete', {
+                    objectName: sceneObject.object?.objectName,
+                    hex: e.hex,
+                  });
+                }}
               />
             </FormControl>
           )}

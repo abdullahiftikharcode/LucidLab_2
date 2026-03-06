@@ -1,5 +1,5 @@
-using System.Runtime.InteropServices;
 using UnityEngine;
+using RuntimeHandle;
 
 public class ToolController : MonoBehaviour
 {
@@ -20,11 +20,22 @@ public class ToolController : MonoBehaviour
     private string selectedObjectName = "";
     private ObjectManagement objectManager;
     private Camera mainCamera;
+    private RuntimeTransformHandle runtimeHandle;
 
     void Start()
     {
         objectManager = GetComponent<ObjectManagement>();
         mainCamera = Camera.main;
+
+        // Try to find an existing RuntimeTransformHandle in the scene; if not, create one
+        runtimeHandle = FindObjectOfType<RuntimeTransformHandle>();
+        if (runtimeHandle == null)
+        {
+            runtimeHandle = RuntimeTransformHandle.Create(null, HandleType.POSITION);
+            runtimeHandle.gameObject.name = "RuntimeTransformHandle";
+        }
+
+        runtimeHandle.gameObject.SetActive(false);
     }
 
     /// <summary>
@@ -36,6 +47,7 @@ public class ToolController : MonoBehaviour
         {
             currentTool = newMode;
             Debug.Log($"[ToolController] Tool mode changed to: {currentTool}");
+            SyncHandleMode();
         }
         else
         {
@@ -52,6 +64,13 @@ public class ToolController : MonoBehaviour
             Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out RaycastHit hit))
             {
+                // If we clicked on a RuntimeTransformHandle gizmo, don't change selection
+                var handleHit = hit.collider.gameObject.GetComponentInParent<HandleBase>();
+                if (handleHit != null)
+                {
+                    return;
+                }
+
                 string hitObjectName = hit.collider.gameObject.name;
                 
                 // Exclude the ground from selection if needed, assuming ground has a specific name or layer
@@ -78,6 +97,18 @@ public class ToolController : MonoBehaviour
 
         selectedObjectName = objectName;
         Debug.Log($"[ToolController] Selected object: {selectedObjectName}");
+
+        // Attach runtime handle to the selected object
+        if (runtimeHandle != null)
+        {
+            var selectedGo = GameObject.Find(selectedObjectName);
+            if (selectedGo != null)
+            {
+                runtimeHandle.SetTarget(selectedGo);
+                runtimeHandle.gameObject.SetActive(true);
+                SyncHandleMode();
+            }
+        }
         
         // Notify React
         ReactBridge.SendObjectSelected(selectedObjectName);
@@ -89,9 +120,46 @@ public class ToolController : MonoBehaviour
 
         selectedObjectName = "";
         Debug.Log("[ToolController] Deselected object");
+
+        if (runtimeHandle != null)
+        {
+            runtimeHandle.gameObject.SetActive(false);
+        }
         
         // Notify React (sending empty string)
         ReactBridge.SendObjectSelected("");
+    }
+
+    private void SyncHandleMode()
+    {
+        if (runtimeHandle == null)
+        {
+            return;
+        }
+
+        // Default to all axes enabled
+        runtimeHandle.SetAxis(HandleAxes.XYZ);
+
+        // Enable/disable handle based on current tool
+        switch (currentTool)
+        {
+            case ToolMode.Move:
+                runtimeHandle.SetHandleMode(HandleType.POSITION);
+                runtimeHandle.gameObject.SetActive(!string.IsNullOrEmpty(selectedObjectName));
+                break;
+            case ToolMode.Rotate:
+                runtimeHandle.SetHandleMode(HandleType.ROTATION);
+                runtimeHandle.gameObject.SetActive(!string.IsNullOrEmpty(selectedObjectName));
+                break;
+            case ToolMode.Scale:
+                runtimeHandle.SetHandleMode(HandleType.SCALE);
+                runtimeHandle.gameObject.SetActive(!string.IsNullOrEmpty(selectedObjectName));
+                break;
+            default:
+                // Hand / Rect / Transform not wired yet – hide gizmo
+                runtimeHandle.gameObject.SetActive(false);
+                break;
+        }
     }
 
     // -------------------------------------------------------------------------

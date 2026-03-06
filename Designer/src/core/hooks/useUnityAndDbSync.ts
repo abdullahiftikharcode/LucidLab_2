@@ -84,6 +84,12 @@ export default function useUnityAndDbSync({ unityContext, expName, sceneName }: 
           if (!oldObj || newObj.color !== oldObj.color) {
             // Note: color could be undefined initially depending on data schema
             const colorToSet = newObj.color || "#000000";
+            console.log('[useUnityAndDbSync] setObjectColor', {
+              objectName: newObj.objectName,
+              oldColor: oldObj?.color,
+              newColor: newObj.color,
+              colorToSet,
+            });
             unityObjectManager.setObjectColor(newObj.objectName, colorToSet);
           }
 

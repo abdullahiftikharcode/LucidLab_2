@@ -144,6 +144,12 @@ export default function useScene(expName: string, sceneName: string) {
     const object = objects?.find(object => object.objectName === objectName);
 
     function setPosition(position: [number, number, number]) {
+      console.log('[useScene] setPosition', {
+        expName,
+        sceneName,
+        objectName,
+        position,
+      });
       updateDoc(getSceneObjectDocRef(fsapp, expName, sceneName, objectName), {
         position: position,
       });
@@ -180,6 +186,12 @@ export default function useScene(expName: string, sceneName: string) {
     }
 
     function setColor(color: string) {
+      console.log('[useScene] setColor', {
+        expName,
+        sceneName,
+        objectName,
+        color,
+      });
       updateDoc(getSceneObjectDocRef(fsapp, expName, sceneName, objectName), {
         color: color,
       });
