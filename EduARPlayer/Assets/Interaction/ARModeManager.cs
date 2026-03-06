@@ -9,6 +9,7 @@ namespace Assets.Interaction {
         public ARTrackedImageManager imageManager;
         public ARPlaneManager planeManager;
         public ARRaycastManager raycastManager;
+        public ARAnchorManager anchorManager;
 
         [Header("State")]
         public TrackingModeToggleUI.TrackingMode currentMode = TrackingModeToggleUI.TrackingMode.Marker;
@@ -37,8 +38,9 @@ namespace Assets.Interaction {
             if (imageManager == null) imageManager = Object.FindFirstObjectByType<ARTrackedImageManager>();
             if (planeManager == null) planeManager = Object.FindFirstObjectByType<ARPlaneManager>();
             if (raycastManager == null) raycastManager = Object.FindFirstObjectByType<ARRaycastManager>();
+            if (anchorManager == null) anchorManager = Object.FindFirstObjectByType<ARAnchorManager>();
 
-            // If plane or raycast managers don't exist on the XR Origin, add them
+            // If plane or raycast or anchor managers don't exist on the XR Origin, add them
             if (planeManager == null && imageManager != null) {
                 Debug.Log("[PlaneDetection] ARPlaneManager not found, creating one dynamically.");
                 planeManager = imageManager.gameObject.AddComponent<ARPlaneManager>();
@@ -46,6 +48,15 @@ namespace Assets.Interaction {
             if (raycastManager == null && imageManager != null) {
                 Debug.Log("[PlaneDetection] ARRaycastManager not found, creating one dynamically.");
                 raycastManager = imageManager.gameObject.AddComponent<ARRaycastManager>();
+            }
+            if (anchorManager == null && imageManager != null) {
+                Debug.Log("[ARLockManager] ARAnchorManager not found, creating one dynamically to prevent drift.");
+                anchorManager = imageManager.gameObject.AddComponent<ARAnchorManager>();
+            }
+
+            if (imageManager != null) {
+                // Ensure image detection is actively tracking moving objects, otherwise it stops updating
+                imageManager.requestedMaxNumberOfMovingImages = 4;
             }
 
             if (planeManager != null) {
@@ -110,6 +121,12 @@ namespace Assets.Interaction {
             } 
             else if (mode == TrackingModeToggleUI.TrackingMode.Plane) {
                 Debug.Log("[PlaneDetection] Validating Plane Mode switch. imageManager present? " + (imageManager != null) + ", planeManager present? " + (planeManager != null));
+                
+                var sceneManager = Object.FindFirstObjectByType<SceneManager>();
+                if (sceneManager != null) {
+                    sceneManager.LoadDefaultSceneForPlaneMode();
+                }
+
                 if (imageManager != null) imageManager.enabled = false; // Stop finding new markers
                 if (planeManager != null) {
                     planeManager.enabled = true;
@@ -126,6 +143,12 @@ namespace Assets.Interaction {
                 var anchors = FindObjectsOfType<MarkerAnchor>(true);
                 foreach (var anchor in anchors) {
                     anchor.HideForPlaneTransition();
+                }
+
+                // Reset plane placement state
+                var lockManager = Object.FindFirstObjectByType<ARLockManager>();
+                if (lockManager != null) {
+                    lockManager.SetPlanePlaced(false);
                 }
             }
 
@@ -153,6 +176,9 @@ namespace Assets.Interaction {
         void Update() {
             // Handle Tap-to-Place in Plane Mode
             if (currentMode == TrackingModeToggleUI.TrackingMode.Plane && raycastManager != null) {
+                // Ignore taps if the scene is locked
+                if (ARLockManager.IsLocked) return;
+
                 if (Input.touchCount > 0) {
                     Touch touch = Input.GetTouch(0);
                     if (touch.phase == TouchPhase.Began) {
@@ -186,6 +212,12 @@ namespace Assets.Interaction {
                 // Make sure to display the scene description again once placed
                 if (_sceneManager != null && _sceneManager.currentScene != null) {
                     _sceneManager.ShowDescription(_sceneManager.currentScene.Description);
+                }
+
+                // Notify lock manager that plane placement happened
+                var lockManager = Object.FindFirstObjectByType<ARLockManager>();
+                if (lockManager != null) {
+                    lockManager.SetPlanePlaced(true);
                 }
             }
         }

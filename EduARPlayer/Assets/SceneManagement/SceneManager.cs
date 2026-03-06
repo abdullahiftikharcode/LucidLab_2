@@ -63,8 +63,8 @@ namespace Assets.SceneManagement {
         }
 
         private void OnMarkerLost(string markerId) {
-            // Pause logic when no markers are being tracked and not locked
-            if (!ARLockManager.IsLocked && ARExperimentManager.MarkerTransforms.Count == 0 && logicManager.HasStartedExecuting) {
+            // Pause logic when no markers are being tracked and not locked or placed
+            if (!ARLockManager.IsLocked && !ARLockManager.IsPlanePlaced && ARExperimentManager.MarkerTransforms.Count == 0 && logicManager.HasStartedExecuting) {
                 logicManager.PauseExecuting();
             }
         }
@@ -86,14 +86,14 @@ namespace Assets.SceneManagement {
         void Update() {
             if (!_sceneReady || currentScene == null) return;
 
-            bool hasActiveMarkers = ARExperimentManager.MarkerTransforms.Count > 0 || ARLockManager.IsLocked;
+            bool isSceneActive = ARExperimentManager.MarkerTransforms.Count > 0 || ARLockManager.IsLocked || ARLockManager.IsPlanePlaced;
 
-            // Start logic on first marker detection
-            if (hasActiveMarkers && !_logicStartedOnce) {
+            // Start logic on first marker detection or plane placement
+            if (isSceneActive && !_logicStartedOnce) {
                 StartSceneExecution();
             }
-            // Resume logic when markers reappear
-            else if (hasActiveMarkers && _logicStartedOnce && !logicManager.HasStartedExecuting) {
+            // Resume logic when markers reappear or plane placed
+            else if (isSceneActive && _logicStartedOnce && !logicManager.HasStartedExecuting) {
                 logicManager.ResumeExecuting();
             }
         }
@@ -112,6 +112,13 @@ namespace Assets.SceneManagement {
 
         public void HideDescription() {
             if (sceneDescriptionGameObject != null) sceneDescriptionGameObject.SetActive(false);
+        }
+
+        public void LoadDefaultSceneForPlaneMode() {
+            if (currentScene == null && sceneLoader.Scenes != null && sceneLoader.Scenes.Count > 0) {
+                Debug.Log("[SceneManager] Loading default scene for Plane Mode.");
+                SetCurrentScene(sceneLoader.Scenes[0]);
+            }
         }
 
         async void Start() {
@@ -142,6 +149,7 @@ namespace Assets.SceneManagement {
                 // If the user already switched the mode while loading, respect the plane state.
                 // The Mode Manager's OnPlanesChanged will soon override this if a plane is already visible.
                 ShowDescription("SCAN A PLANE");
+                LoadDefaultSceneForPlaneMode();
             } else {
                 ShowDescription("SCAN A MARKER TO START THE EXPERIMENT");
             }

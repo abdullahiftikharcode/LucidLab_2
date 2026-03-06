@@ -53,6 +53,8 @@ namespace Assets.Interaction {
         }
 
         public void SnapToPlane(Pose hitPose) {
+            Debug.Log($"[MarkerAnchor] SnapToPlane START — name={gameObject.name}, active={gameObject.activeSelf}, _isLocked={_isLocked}");
+
             // Edge case fix: If an anchor already exists (we repinned it), destroy it first!
             // Unity's AR system won't let you just move an active ARAnchor via transforms permanently.
             if (_arAnchor != null) {
@@ -73,6 +75,9 @@ namespace Assets.Interaction {
             _arAnchor = gameObject.AddComponent<ARAnchor>();
 
             SetVisible(true);
+
+            int rendererCount = GetComponentsInChildren<Renderer>(true).Length;
+            Debug.Log($"[MarkerAnchor] SnapToPlane END — pos={transform.position}, scale={transform.localScale}, renderers={rendererCount}, _isVisible={_isVisible}");
         }
 
         public void ClearPlanePlacement() {
@@ -131,9 +136,13 @@ namespace Assets.Interaction {
         }
 
         private void HandleMarkerLost(string id) {
-            if (_isLocked || isPlanePlaced) return;
+            if (_isLocked || isPlanePlaced) {
+                Debug.Log($"[MarkerAnchor] HandleMarkerLost SKIPPED — _isLocked={_isLocked}, isPlanePlaced={isPlanePlaced}");
+                return;
+            }
 
             if (id == markerId) {
+                Debug.Log($"[MarkerAnchor] HandleMarkerLost HIDING — name={gameObject.name}, markerId={id}");
                 SetVisible(false);
             }
         }
