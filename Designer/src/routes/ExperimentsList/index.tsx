@@ -210,7 +210,7 @@ export default function ExperimentsList() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {filtered.map(exp => (
-              <div key={exp.id} className="group flex flex-col bg-white rounded-xl border border-slate-200 overflow-hidden hover:shadow-lg hover:border-primary/30 transition-all">
+              <div key={exp.id} className="group flex flex-col bg-white rounded-xl border border-slate-200 hover:shadow-lg hover:border-primary/30 transition-all">
                 <Link to={`/experiment/${exp.id}`} className="relative w-full aspect-video bg-slate-200 overflow-hidden flex items-center justify-center">
                   {exp.thumbnailUrl ? (
                     <img className="w-full h-full object-cover transition-transform group-hover:scale-105" src={exp.thumbnailUrl} alt={exp.title} />

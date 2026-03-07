@@ -29,4 +29,5 @@ export interface SceneState {
 
 export interface ExperimentState {
   name: string;
+  title?: string;
 }
