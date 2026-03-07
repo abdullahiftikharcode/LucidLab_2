@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { getFirestore, collection, query, where, getDocs, addDoc, deleteDoc, doc, getDoc, serverTimestamp, updateDoc, arrayRemove } from 'firebase/firestore';
+import { getFirestore, collection, query, where, getDocs, addDoc, deleteDoc, doc, getDoc, serverTimestamp, updateDoc, arrayRemove, setDoc } from 'firebase/firestore';
 import { useFirebaseApp } from 'reactfire';
 import { useAuth } from '../../contexts/AuthContext';
 import TopBar from '../../components/TopBar';
@@ -61,7 +61,10 @@ export default function ExperimentsList() {
 
   async function createExperiment() {
     try {
-      const docRef = await addDoc(collection(db, 'experiments'), {
+      // Pre-generate the experiment ID so we can store it as `name` (used by the editor hooks)
+      const expRef = doc(collection(db, 'experiments'));
+      await setDoc(expRef, {
+        name: expRef.id,
         title: 'Untitled Experiment',
         category: 'General Science',
         status: 'draft',
@@ -72,7 +75,7 @@ export default function ExperimentsList() {
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
-      navigate(`/experiment/${docRef.id}`);
+      navigate(`/experiment/${expRef.id}`);
     } catch (e) { console.error(e); }
   }
 
@@ -115,6 +118,20 @@ export default function ExperimentsList() {
       });
       loadExperiments();
     } catch (e) { console.error(e); }
+    setOpenMenuId(null);
+  }
+
+  async function togglePublish(exp: Experiment) {
+    try {
+      const newStatus = exp.status === 'published' ? 'draft' : 'published';
+      await updateDoc(doc(db, 'experiments', exp.id), {
+        status: newStatus,
+        updatedAt: serverTimestamp(),
+      });
+      await loadExperiments();
+    } catch (e) {
+      console.error('Failed to toggle publish state', e);
+    }
     setOpenMenuId(null);
   }
 
@@ -221,6 +238,10 @@ export default function ExperimentsList() {
                           <div className="absolute right-0 mt-1 w-40 bg-white rounded-lg shadow-xl border border-slate-200 z-40 py-1">
                             <button onClick={() => duplicateExperiment(exp)} className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2">
                               <span className="material-symbols-outlined text-base">content_copy</span> Duplicate
+                            </button>
+                            <button onClick={() => togglePublish(exp)} className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2">
+                              <span className="material-symbols-outlined text-base">{exp.status === 'published' ? 'unpublished' : 'cloud_upload'}</span>
+                              {exp.status === 'published' ? 'Unpublish' : 'Publish'}
                             </button>
                             <button onClick={() => { setConfirmDelete({ open: true, id: exp.id, title: exp.title }); setOpenMenuId(null); }} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2">
                               <span className="material-symbols-outlined text-base">delete</span> Delete

@@ -13,29 +13,35 @@ export default function useExperiment(expName: string) {
     getScenesCollectionRef(fsapp, expName),
   );
 
-    function createSelf() {
-      const experimentRef = getExperimentDocRef(fsapp, expName);
-      setDoc(experimentRef, {
+  async function createSelf() {
+    const experimentRef = getExperimentDocRef(fsapp, expName);
+    // Important: use merge so we don't wipe fields like instructorId/title/category/etc.
+    await setDoc(
+      experimentRef,
+      {
         name: expName,
-      });
-    }
+      },
+      { merge: true },
+    );
+  }
 
-    function createScene(name: string) {
-      createSelf();
+  async function createScene(name: string) {
+    await createSelf();
 
-      let nextIndex = scenes.length + 1;
-      const sceneRef = getSceneDocRef(fsapp, expName, name);
-      setDoc(sceneRef, {
-        name,
-        description: '',
-        index: nextIndex,
-      });
-    }
+    const scenesList = (scenes as any[]) ?? [];
+    const nextIndex = scenesList.length + 1;
+    const sceneRef = getSceneDocRef(fsapp, expName, name);
+    await setDoc(sceneRef, {
+      name,
+      description: '',
+      index: nextIndex,
+    });
+  }
 
-    return {
-      experiment,
-      scenes,
-      createScene,
-      createSelf,
-    };
+  return {
+    experiment,
+    scenes: (scenes as any[]) ?? [],
+    createScene,
+    createSelf,
+  };
 }
