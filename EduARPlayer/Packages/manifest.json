@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "com.coplaydev.coplay": "https://github.com/CoplayDev/coplay-unity-plugin.git#beta",
-    "com.coplaydev.unity-mcp": "https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#main",
+    "com.coplaydev.unity-mcp": "file:C:/Users/jivot/Documents/unity-mcp/MCPForUnity",
     "com.unity.cloud.gltfast": "6.2.0",
     "com.unity.ide.visualstudio": "2.0.22",
     "com.unity.ide.vscode": "1.2.5",

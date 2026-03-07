@@ -9,6 +9,7 @@ Library: C:\Users\jivot\Documents\EduAR\EduARPlayer\Temp\BurstOutput\tempburstli
 --target-framework=NetFramework
 --generate-link-xml=Temp\burst.link.xml
 --temp-folder=C:\Users\jivot\Documents\EduAR\EduARPlayer\Temp\Burst
+--debug=LineOnly
 --key-folder=C:/Program Files/Unity/Hub/Editor/2022.3.62f3/Editor/Data/PlaybackEngines/AndroidPlayer
 --decode-folder=C:\Users\jivot\Documents\EduAR\EduARPlayer\Library\Burst
 --output=C:\Users\jivot\Documents\EduAR\EduARPlayer\Temp\BurstOutput\tempburstlibs\armeabi-v7a\lib_burst_generated
@@ -126,6 +127,7 @@ Library: C:\Users\jivot\Documents\EduAR\EduARPlayer\Temp\BurstOutput\tempburstli
 --float-mode=Fast
 --generate-link-xml=Temp\burst.link.xml
 --temp-folder=C:\Users\jivot\Documents\EduAR\EduARPlayer\Temp\Burst
+--debug=LineOnly
 --key-folder=C:/Program Files/Unity/Hub/Editor/2022.3.62f3/Editor/Data/PlaybackEngines/AndroidPlayer
 --decode-folder=C:\Users\jivot\Documents\EduAR\EduARPlayer\Library\Burst
 --output=C:\Users\jivot\Documents\EduAR\EduARPlayer\Temp\BurstOutput\tempburstlibs\armeabi-v7a\lib_burst_generated
@@ -143,6 +145,7 @@ Library: C:\Users\jivot\Documents\EduAR\EduARPlayer\Temp\BurstOutput\tempburstli
 --target-framework=NetFramework
 --generate-link-xml=Temp\burst.link.xml
 --temp-folder=C:\Users\jivot\Documents\EduAR\EduARPlayer\Temp\Burst
+--debug=LineOnly
 --key-folder=C:/Program Files/Unity/Hub/Editor/2022.3.62f3/Editor/Data/PlaybackEngines/AndroidPlayer
 --decode-folder=C:\Users\jivot\Documents\EduAR\EduARPlayer\Library\Burst
 --output=C:\Users\jivot\Documents\EduAR\EduARPlayer\Temp\BurstOutput\tempburstlibs\armeabi-v7a\lib_burst_generated

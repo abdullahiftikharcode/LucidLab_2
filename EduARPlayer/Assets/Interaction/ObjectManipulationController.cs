@@ -40,7 +40,12 @@ namespace Assets.Interaction
 
         public void OnObjectTapped(GameObject go)
         {
-            if (ARLockManager.IsLocked) return;
+            Debug.Log($"[ObjectManipulationController] OnObjectTapped called for: {go.name}");
+            //if (ARLockManager.IsLocked) 
+            //{
+            //    Debug.Log("[ObjectManipulationController] Scene is locked, ignoring tap.");
+            //    return;
+            //}
 
             var grabbable = go.GetComponentInParent<GrabbableObject>();
             if (grabbable == null)
@@ -48,22 +53,33 @@ namespace Assets.Interaction
                 var xrGrab = go.GetComponentInParent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable>();
                 if (xrGrab != null)
                 {
+                    Debug.Log($"[ObjectManipulationController] Found XRGrabInteractable on {xrGrab.gameObject.name}, adding GrabbableObject component.");
                     grabbable = xrGrab.gameObject.AddComponent<GrabbableObject>();
                 }
             }
 
-            if (grabbable == null || !grabbable.isGrabbable)
+            if (grabbable == null)
             {
+                Debug.Log($"[ObjectManipulationController] Could not find or add GrabbableObject for {go.name}. Deselecting.");
+                Deselect();
+                return;
+            }
+
+            if (!grabbable.isGrabbable)
+            {
+                Debug.Log($"[ObjectManipulationController] Object {grabbable.name} has isGrabbable = false. Deselecting.");
                 Deselect();
                 return;
             }
 
             if (go == _selectedObject)
             {
+                Debug.Log($"[ObjectManipulationController] Object {go.name} is already selected. Toggling off.");
                 Deselect(); // toggle
                 return;
             }
 
+            Debug.Log($"[ObjectManipulationController] Submitting object {go.name} for Selection.");
             Select(go, grabbable);
         }
 
@@ -87,6 +103,7 @@ namespace Assets.Interaction
 
         private void ShowPanel()
         {
+            Debug.Log($"[ObjectManipulationController] ShowPanel called. JoystickPanel assigned: {joystickPanel != null}");
             if (joystickPanel != null)
             {
                 joystickPanel.alpha = 1;
@@ -108,7 +125,7 @@ namespace Assets.Interaction
         void Update()
         {
             if (_selectedObject == null || _grabbable == null) return;
-            if (ARLockManager.IsLocked) return;
+            //if (ARLockManager.IsLocked) return;
 
             if (rightJoystick != null && rightJoystick.Direction != Vector2.zero)
             {

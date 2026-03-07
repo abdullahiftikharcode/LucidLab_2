@@ -3,7 +3,7 @@
     "m_SelectedProcess": {
         "deviceId": "ZF6523HFKG",
         "name": "com.example.campuspulse",
-        "processId": 12902,
+        "processId": 4056,
         "exited": false
     },
     "m_SelectedPriority": 0,
@@ -35,73 +35,43 @@
         {
             "deviceId": "ZF6523HFKG",
             "name": "com.example.campuspulse",
-            "processId": 21842,
-            "exited": true
-        },
-        {
-            "deviceId": "ZF6523HFKG",
-            "name": "com.example.campuspulse",
-            "processId": 25789,
-            "exited": true
-        },
-        {
-            "deviceId": "ZF6523HFKG",
-            "name": "com.example.campuspulse",
-            "processId": 28013,
-            "exited": true
-        },
-        {
-            "deviceId": "ZF6523HFKG",
-            "name": "com.example.campuspulse",
-            "processId": 28683,
-            "exited": true
-        },
-        {
-            "deviceId": "ZF6523HFKG",
-            "name": "com.example.campuspulse",
-            "processId": 21516,
-            "exited": false
-        },
-        {
-            "deviceId": "ZF6523HFKG",
-            "name": "com.example.campuspulse",
-            "processId": 27016,
-            "exited": false
-        },
-        {
-            "deviceId": "ZF6523HFKG",
-            "name": "com.example.campuspulse",
-            "processId": 32694,
-            "exited": false
-        },
-        {
-            "deviceId": "ZF6523HFKG",
-            "name": "com.example.campuspulse",
-            "processId": 6214,
-            "exited": false
-        },
-        {
-            "deviceId": "ZF6523HFKG",
-            "name": "com.example.campuspulse",
-            "processId": 10512,
-            "exited": false
-        },
-        {
-            "deviceId": "ZF6523HFKG",
-            "name": "com.example.campuspulse",
             "processId": 14964,
-            "exited": false
+            "exited": true
         },
         {
             "deviceId": "ZF6523HFKG",
             "name": "com.example.campuspulse",
             "processId": 22761,
-            "exited": false
+            "exited": true
         },
         {
             "deviceId": "ZF6523HFKG",
             "name": "com.example.campuspulse",
             "processId": 12902,
+            "exited": true
+        },
+        {
+            "deviceId": "ZF6523HFKG",
+            "name": "com.example.campuspulse",
+            "processId": 28787,
+            "exited": true
+        },
+        {
+            "deviceId": "ZF6523HFKG",
+            "name": "com.example.campuspulse",
+            "processId": 29851,
+            "exited": false
+        },
+        {
+            "deviceId": "ZF6523HFKG",
+            "name": "com.example.campuspulse",
+            "processId": 32758,
+            "exited": false
+        },
+        {
+            "deviceId": "ZF6523HFKG",
+            "name": "com.example.campuspulse",
+            "processId": 4056,
             "exited": false
         },
         {
@@ -243,7 +213,7 @@
         "AutoCapture": true
     },
     "m_FilterOptions": {
-        "m_Filter": "",
+        "m_Filter": "objectmani",
         "m_UseRegularExpressions": false,
         "m_MatchCase": false
     },

@@ -24,8 +24,8 @@ namespace Assets.Interaction {
 
         private float _touchStartTime;
         private Vector2 _touchStartPos;
-        private const float MaxTapDuration = 0.2f;
-        private const float MaxTapDistance = 15f;
+        private const float MaxTapDuration = 0.35f; // Increased from 0.2
+        private const float MaxTapDistance = 30f;   // Increased from 15
 
         void Update() {
             // Detect a single tap (touch or mouse click)
@@ -36,10 +36,18 @@ namespace Assets.Interaction {
             if (Input.GetMouseButtonDown(0)) {
                 _touchStartTime = Time.time;
                 _touchStartPos = Input.mousePosition;
+                Debug.Log($"[TapInteractor] Mouse Down at {_touchStartPos}");
             } else if (Input.GetMouseButtonUp(0)) {
-                if (Time.time - _touchStartTime <= MaxTapDuration && Vector2.Distance(Input.mousePosition, _touchStartPos) <= MaxTapDistance) {
+                float duration = Time.time - _touchStartTime;
+                float distance = Vector2.Distance(Input.mousePosition, _touchStartPos);
+                Debug.Log($"[TapInteractor] Mouse Up. Duration: {duration}s, Distance: {distance}px");
+                
+                if (duration <= MaxTapDuration && distance <= MaxTapDistance) {
                     tapped = true;
                     screenPos = Input.mousePosition;
+                    Debug.Log("[TapInteractor] Valid Mouse Tap Detected!");
+                } else {
+                    Debug.Log($"[TapInteractor] Mouse Tap Rejected. Max allowed: {MaxTapDuration}s, {MaxTapDistance}px");
                 }
             }
 #else
@@ -48,10 +56,18 @@ namespace Assets.Interaction {
                 if (touch.phase == TouchPhase.Began) {
                     _touchStartTime = Time.time;
                     _touchStartPos = touch.position;
+                    Debug.Log($"[TapInteractor] Touch Began at {_touchStartPos}");
                 } else if (touch.phase == TouchPhase.Ended) {
-                    if (Time.time - _touchStartTime <= MaxTapDuration && Vector2.Distance(touch.position, _touchStartPos) <= MaxTapDistance) {
+                    float duration = Time.time - _touchStartTime;
+                    float distance = Vector2.Distance(touch.position, _touchStartPos);
+                    Debug.Log($"[TapInteractor] Touch Ended. Duration: {duration}s, Distance: {distance}px");
+                    
+                    if (duration <= MaxTapDuration && distance <= MaxTapDistance) {
                         tapped = true;
                         screenPos = touch.position;
+                        Debug.Log("[TapInteractor] Valid Tap Detected!");
+                    } else {
+                        Debug.Log($"[TapInteractor] Tap Rejected. Max allowed: {MaxTapDuration}s, {MaxTapDistance}px");
                     }
                 }
             }
@@ -64,8 +80,10 @@ namespace Assets.Interaction {
 
             var ray = cam.ScreenPointToRay(screenPos);
             if (Physics.Raycast(ray, out RaycastHit hit, maxDistance, interactableLayer)) {
+                Debug.Log($"[TapInteractor] Raycast hit: {hit.collider.gameObject.name}");
                 OnObjectTapped?.Invoke(hit.collider.gameObject);
             } else {
+                Debug.Log("[TapInteractor] Raycast hit nothing.");
                 OnEmptyTapped?.Invoke();
             }
         }
