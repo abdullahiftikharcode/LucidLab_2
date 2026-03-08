@@ -13,6 +13,40 @@ interface Experiment {
   experimentCode: string; classroomIds: string[]; updatedAt: any; thumbnailUrl: string;
 }
 
+const PUBLIC_IMAGE_BASE = '/Lucid_Lab%20images/';
+const CATEGORY_IMAGES: Record<string, string[]> = {
+  Chemistry: [
+    'chemistry_beaker.png',
+    'chemistry_bonds.png',
+    'chemistry_intro.png',
+    'chemistry3.png',
+    'chemistry4.png',
+    'molecular_bond_chemistry.png',
+  ],
+  Physics: ['Physics.png', 'Physics1.png', 'Physics_waves.png'],
+  Biology: ['Biology_cell.png', 'biology_heart.png', 'biology_mitosis.png', 'biology_plantcell.png'],
+  'General Science': ['General_science.png'],
+  Quantum: ['quantam.png', 'quantam1.png'],
+  Engineering: ['General_science.png'],
+  Geology: ['General_science.png'],
+  Other: ['General_science.png'],
+};
+
+function pickCategoryImage(category: string, seed: string): string | null {
+  const list =
+    CATEGORY_IMAGES[category] ||
+    CATEGORY_IMAGES[category?.trim()] ||
+    CATEGORY_IMAGES['Other'];
+  if (!list || list.length === 0) return null;
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) {
+    h = (h << 5) - h + seed.charCodeAt(i);
+    h |= 0;
+  }
+  const idx = Math.abs(h) % list.length;
+  return `${PUBLIC_IMAGE_BASE}${list[idx]}`;
+}
+
 const CATEGORY_COLORS: Record<string, { badge: string; label: string }> = {
   Chemistry: { badge: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20', label: 'Chemistry' },
   Physics: { badge: 'bg-amber-500/10 text-amber-600 border-amber-500/20', label: 'Physics' },
@@ -222,11 +256,15 @@ export default function ExperimentsList() {
               {filtered.map(exp => (
                 <div key={exp.id} className="group flex flex-col bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 hover:shadow-lg hover:border-primary/30 transition-all">
                   <Link to={`/experiment/${exp.id}`} className="relative w-full aspect-video bg-slate-200 dark:bg-slate-800 overflow-hidden flex items-center justify-center">
-                    {exp.thumbnailUrl ? (
-                      <img className="w-full h-full object-cover transition-transform group-hover:scale-105" src={exp.thumbnailUrl} alt={exp.title} />
-                    ) : (
-                      <span className="material-symbols-outlined text-5xl text-slate-300 dark:text-slate-500">{CATEGORY_ICONS[exp.category] || 'science'}</span>
-                    )}
+                    {(() => {
+                      const fallback = pickCategoryImage(exp.category || 'Other', exp.id);
+                      const imgSrc = exp.thumbnailUrl || fallback;
+                      return imgSrc ? (
+                        <img className="w-full h-full object-cover transition-transform group-hover:scale-105" src={imgSrc} alt={exp.title || exp.category || 'Experiment'} />
+                      ) : (
+                        <span className="material-symbols-outlined text-5xl text-slate-300 dark:text-slate-500">{CATEGORY_ICONS[exp.category] || 'science'}</span>
+                      );
+                    })()}
                     <div className="absolute top-3 left-3">
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border backdrop-blur-sm ${exp.status === 'published' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-amber-500/10 text-amber-500 border-amber-500/20'}`}>
                         {exp.status || 'Draft'}
