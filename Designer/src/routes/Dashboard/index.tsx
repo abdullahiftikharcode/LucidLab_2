@@ -39,6 +39,52 @@ const SUBJECT_COLORS: Record<string, { bg: string; text: string }> = {
 
 const SUBJECTS = ['Chemistry', 'Physics', 'Biology', 'Environmental Science', 'General Science', 'Other'];
 
+const SUBJECT_BADGE_CLASSES: Record<string, string> = {
+  Chemistry: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+  Physics: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+  Biology: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+  'Environmental Science': 'bg-teal-500/10 text-teal-400 border-teal-500/20',
+  'General Science': 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
+  Other: 'bg-slate-500/10 text-slate-400 border-slate-500/20',
+};
+
+const SUBJECT_REPRESENTATIVE_ICON: Record<string, string> = {
+  Chemistry: 'science',
+  Physics: 'speed',
+  Biology: 'biotech',
+  'Environmental Science': 'eco',
+  'General Science': 'category',
+  Other: 'school',
+};
+
+const SUBJECT_ICON_POOLS: Record<string, string[]> = {
+  Chemistry: ['science', 'biotech', 'water_drop', 'calculate', 'shield', 'memory', 'graphic_eq', 'flare', 'device_thermostat'],
+  Physics: ['speed', 'rocket_launch', 'satellite_alt', 'waves', 'lightbulb', 'data_object', 'category', 'cell_tower', 'timeline'],
+  Biology: ['biotech', 'eco', 'water_drop', 'landscape', 'bug_report', 'memory', 'graphic_eq', 'shield', 'device_thermostat'],
+  'Environmental Science': ['eco', 'globe', 'landscape', 'water_drop', 'waves', 'flare', 'shield', 'category'],
+  'General Science': ['science', 'category', 'lightbulb', 'calculate', 'graphic_eq', 'timeline', 'shield', 'data_object', 'school'],
+  Other: ['school', 'category', 'lightbulb', 'timeline', 'shield', 'graphic_eq', 'data_object', 'memory'],
+};
+
+function pickSubjectIcon(subject: string, seed: string): string {
+  const pool = SUBJECT_ICON_POOLS[subject] || SUBJECT_ICON_POOLS.Other;
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) {
+    h = (h << 5) - h + seed.charCodeAt(i);
+    h |= 0;
+  }
+  const idx = Math.abs(h) % pool.length;
+  return pool[idx] || 'science';
+}
+
+function subjectBadgeClasses(s: string): string {
+  return SUBJECT_BADGE_CLASSES[s] || SUBJECT_BADGE_CLASSES.Other;
+}
+
+function subjectIconForBadge(s: string): string {
+  return SUBJECT_REPRESENTATIVE_ICON[s] || SUBJECT_REPRESENTATIVE_ICON.Other;
+}
+
 function generateJoinCode(): string {
   const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
   let code = '';
@@ -165,255 +211,256 @@ export default function DashboardHome() {
   const subjectColor = (s: string) => SUBJECT_COLORS[s] || SUBJECT_COLORS.Other;
 
   return (
-    <div className="bg-background-light min-h-screen" style={{ fontFamily: "'Inter', sans-serif" }}>
-      <TopBar />
-      <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col p-6 lg:p-10">
-        <div className="mb-10">
-          <h1 className="text-3xl font-black tracking-tight text-slate-900">Instructor Dashboard</h1>
-          <p className="mt-2 text-slate-500">Manage your AR classrooms and active science experiments in real-time.</p>
-        </div>
-
-        {/* My Classrooms Section */}
-        <section className="mb-12">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold tracking-tight">My Classrooms</h2>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white hover:bg-primary/90 transition-all shadow-sm shadow-primary/20"
-            >
-              <span className="material-symbols-outlined text-lg">add</span>
-              New Classroom
-            </button>
+    <div className="dark">
+      <div className="bg-background-light dark:bg-background-dark min-h-screen font-display text-slate-900 dark:text-slate-100" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <TopBar />
+        <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col p-6 lg:p-10">
+          <div className="mb-10">
+            <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-slate-100">Instructor Dashboard</h1>
+            <p className="mt-2 text-slate-500 dark:text-slate-400">Manage your AR classrooms and active science experiments in real-time.</p>
           </div>
 
-          {loadingClassrooms ? (
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="animate-pulse rounded-xl border border-slate-200 bg-white p-5 h-48" />
-              ))}
+          {/* My Classrooms Section */}
+          <section className="mb-12">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold tracking-tight">My Classrooms</h2>
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white hover:bg-primary/90 transition-all shadow-sm shadow-primary/20"
+              >
+                <span className="material-symbols-outlined text-lg">add</span>
+                New Classroom
+              </button>
             </div>
-          ) : classrooms.length === 0 ? (
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
-              <EmptyState
-                icon="school"
-                title="No classrooms yet"
-                description="Create your first classroom to start organizing students and assigning experiments."
-                actionLabel="Create Classroom"
-                onAction={() => setShowCreateModal(true)}
-              />
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {classrooms.map(c => (
-                <Link
-                  to={`/classrooms/${c.id}`}
-                  key={c.id}
-                  className="group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all hover:shadow-md"
-                >
-                  {/* Cover Image Banner */}
-                  <div className={`h-28 relative overflow-hidden ${c.coverImageURL ? '' : 'bg-gradient-to-br from-primary/20 to-primary/5'}`}>
-                    {c.coverImageURL ? (
-                      <img src={c.coverImageURL} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="absolute inset-0 flex items-center justify-center opacity-20">
-                        <span className="material-symbols-outlined text-6xl text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>science</span>
-                      </div>
-                    )}
-                    <div className="absolute top-3 left-3">
-                      <span className={`inline-flex rounded-full ${subjectColor(c.subject).bg} px-2.5 py-0.5 text-xs font-semibold ${subjectColor(c.subject).text} shadow-sm`}>
-                        {c.subject}
-                      </span>
-                    </div>
-                    <span className="absolute top-3 right-3 material-symbols-outlined text-white/60 group-hover:text-white/90 drop-shadow">chevron_right</span>
-                  </div>
-                  <div className="flex flex-col p-5">
-                    <h3 className="text-lg font-bold">{c.name}</h3>
-                    <div className="mt-3 flex items-center gap-4 text-sm text-slate-500">
-                      <div className="flex items-center gap-1">
-                        <span className="material-symbols-outlined text-base text-slate-400">groups</span>
-                        <span>{c.studentCount} Students</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <span className="material-symbols-outlined text-base text-slate-400">science</span>
-                        <span>{c.experimentIds?.length || 0} Experiments</span>
-                      </div>
-                    </div>
-                    <div className="mt-4 flex items-center justify-between rounded-lg bg-slate-50 p-3">
-                      <code className="font-mono text-sm font-bold text-slate-700 tracking-wider">{c.joinCode}</code>
-                      <button
-                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); copyCode(c.joinCode); }}
-                        className="flex items-center gap-1 text-xs font-bold text-primary hover:opacity-80"
-                      >
-                        <span className="material-symbols-outlined text-sm">{copiedCode === c.joinCode ? 'check' : 'content_copy'}</span>
-                        {copiedCode === c.joinCode ? 'COPIED!' : 'COPY CODE'}
-                      </button>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          )}
-        </section>
 
-        {/* Recent Experiments Section */}
-        <section className="mb-12">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold tracking-tight">Recent Experiments</h2>
-            <Link to="/experiments" className="text-sm font-semibold text-primary hover:underline">View All</Link>
-          </div>
+            {loadingClassrooms ? (
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="animate-pulse rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 h-48" />
+                ))}
+              </div>
+            ) : classrooms.length === 0 ? (
+              <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <EmptyState
+                  icon="school"
+                  title="No classrooms yet"
+                  description="Create your first classroom to start organizing students and assigning experiments."
+                  actionLabel="Create Classroom"
+                  onAction={() => setShowCreateModal(true)}
+                />
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {classrooms.map(c => (
+                  <Link
+                    to={`/classrooms/${c.id}`}
+                    key={c.id}
+                    className="group flex flex-col overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm transition-all hover:shadow-md"
+                  >
+                    <div className={`h-28 relative overflow-hidden ${c.coverImageURL ? '' : 'bg-gradient-to-br from-primary/20 to-primary/5'}`}>
+                      {c.coverImageURL ? (
+                        <img src={c.coverImageURL} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="absolute inset-0 flex items-center justify-center opacity-20">
+                          <span className="material-symbols-outlined text-6xl text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>{pickSubjectIcon(c.subject, c.id || c.name || c.joinCode)}</span>
+                        </div>
+                      )}
+                      <div className="absolute top-3 left-3">
+                        <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wide border backdrop-blur-sm ${subjectBadgeClasses(c.subject)}`}>
+                          <span className="material-symbols-outlined text-base">{subjectIconForBadge(c.subject)}</span>
+                          <span>{c.subject}</span>
+                        </span>
+                      </div>
+                      <span className="absolute top-3 right-3 material-symbols-outlined text-white/60 group-hover:text-white/90 drop-shadow">chevron_right</span>
+                    </div>
+                    <div className="flex flex-col p-5">
+                      <h3 className="text-lg font-bold">{c.name}</h3>
+                      <div className="mt-3 flex items-center gap-4 text-sm text-slate-500 dark:text-slate-400">
+                        <div className="flex items-center gap-1">
+                          <span className="material-symbols-outlined text-base text-slate-400 dark:text-slate-500">groups</span>
+                          <span>{c.studentCount} Students</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <span className="material-symbols-outlined text-base text-slate-400 dark:text-slate-500">science</span>
+                          <span>{c.experimentIds?.length || 0} Experiments</span>
+                        </div>
+                      </div>
+                      <div className="mt-4 flex items-center justify-between rounded-lg bg-slate-50 dark:bg-slate-800 p-3">
+                        <code className="font-mono text-sm font-bold text-slate-700 dark:text-slate-300 tracking-wider">{c.joinCode}</code>
+                        <button
+                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); copyCode(c.joinCode); }}
+                          className="flex items-center gap-1 text-xs font-bold text-primary hover:opacity-80"
+                        >
+                          <span className="material-symbols-outlined text-sm">{copiedCode === c.joinCode ? 'check' : 'content_copy'}</span>
+                          {copiedCode === c.joinCode ? 'COPIED!' : 'COPY CODE'}
+                        </button>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </section>
 
-          {loadingExperiments ? (
-            <div className="animate-pulse rounded-xl border border-slate-200 bg-white h-64" />
-          ) : experiments.length === 0 ? (
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
-              <EmptyState
-                icon="science"
-                title="No experiments yet"
-                description="Create your first experiment to get started with AR science content."
-                actionLabel="Create Experiment"
-                onAction={() => navigate('/experiments')}
-              />
+          {/* Recent Experiments Section */}
+          <section className="mb-12">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold tracking-tight">Recent Experiments</h2>
+              <Link to="/experiments" className="text-sm font-semibold text-primary hover:underline">View All</Link>
             </div>
-          ) : (
-            <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-slate-50 text-slate-500 uppercase text-xs font-bold tracking-wider">
-                  <tr>
-                    <th className="px-6 py-4">Experiment Title</th>
-                    <th className="px-6 py-4">Category</th>
-                    <th className="px-6 py-4">Status</th>
-                    <th className="px-6 py-4">Code</th>
-                    <th className="px-6 py-4">Updated</th>
-                    <th className="px-6 py-4 text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {experiments.map(exp => (
-                    <tr key={exp.id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-6 py-4 font-semibold text-slate-900">{exp.title || 'Untitled'}</td>
-                      <td className="px-6 py-4">{exp.category || '—'}</td>
-                      <td className="px-6 py-4">
-                        <StatusBadge status={exp.status || 'draft'} />
-                      </td>
-                      <td className="px-6 py-4 font-mono text-slate-500">{exp.experimentCode || '—'}</td>
-                      <td className="px-6 py-4 text-slate-500">{formatDate(exp.updatedAt)}</td>
-                      <td className="px-6 py-4 text-right">
-                        <Link to={`/experiment/${exp.id}`} className="text-primary font-bold hover:underline">
-                          {exp.status === 'published' ? 'Manage' : 'Edit'}
-                        </Link>
-                      </td>
+
+            {loadingExperiments ? (
+              <div className="animate-pulse rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 h-64" />
+            ) : experiments.length === 0 ? (
+              <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <EmptyState
+                  icon="science"
+                  title="No experiments yet"
+                  description="Create your first experiment to get started with AR science content."
+                  actionLabel="Create Experiment"
+                  onAction={() => navigate('/experiments')}
+                />
+              </div>
+            ) : (
+              <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 uppercase text-xs font-bold tracking-wider">
+                    <tr>
+                      <th className="px-6 py-4">Experiment Title</th>
+                      <th className="px-6 py-4">Category</th>
+                      <th className="px-6 py-4">Status</th>
+                      <th className="px-6 py-4">Code</th>
+                      <th className="px-6 py-4">Updated</th>
+                      <th className="px-6 py-4 text-right">Action</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {experiments.map(exp => (
+                      <tr key={exp.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
+                        <td className="px-6 py-4 font-semibold text-slate-900 dark:text-slate-100">{exp.title || 'Untitled'}</td>
+                        <td className="px-6 py-4">{exp.category || '—'}</td>
+                        <td className="px-6 py-4">
+                          <StatusBadge status={exp.status || 'draft'} />
+                        </td>
+                        <td className="px-6 py-4 font-mono text-slate-500 dark:text-slate-400">{exp.experimentCode || '—'}</td>
+                        <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{formatDate(exp.updatedAt)}</td>
+                        <td className="px-6 py-4 text-right">
+                          <Link to={`/experiment/${exp.id}`} className="text-primary font-bold hover:underline">
+                            {exp.status === 'published' ? 'Manage' : 'Edit'}
+                          </Link>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
+        </main>
+
+        {/* Footer */}
+        <footer className="mt-auto border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 py-8">
+          <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 md:flex-row">
+            <div className="flex items-center gap-2 text-slate-400 dark:text-slate-500">
+              <span className="material-symbols-outlined text-xl">science</span>
+              <span className="text-sm font-medium">© 2026 LucidLab. All rights reserved.</span>
             </div>
-          )}
-        </section>
-      </main>
-
-      {/* Footer */}
-      <footer className="mt-auto border-t border-slate-200 bg-white px-6 py-8">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 md:flex-row">
-          <div className="flex items-center gap-2 text-slate-400">
-            <span className="material-symbols-outlined text-xl">science</span>
-            <span className="text-sm font-medium">© 2026 LucidLab. All rights reserved.</span>
+            <div className="flex gap-8 text-sm font-medium text-slate-500 dark:text-slate-400">
+              <a className="hover:text-primary" href="#">Support</a>
+              <a className="hover:text-primary" href="#">Privacy Policy</a>
+            </div>
           </div>
-          <div className="flex gap-8 text-sm font-medium text-slate-500">
-            <a className="hover:text-primary" href="#">Support</a>
-            <a className="hover:text-primary" href="#">Privacy Policy</a>
-          </div>
-        </div>
-      </footer>
+        </footer>
 
-      {/* Create Classroom Modal */}
-      {showCreateModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowCreateModal(false)} />
-          <div className="relative bg-white rounded-xl shadow-2xl border border-slate-200 p-6 max-w-lg w-full mx-4 z-10">
-            <h3 className="text-xl font-bold text-slate-900 mb-6">Create Classroom</h3>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Classroom Name *</label>
-                <input
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                  placeholder="e.g., Chemistry Grade 10-A"
-                  value={newClassroom.name}
-                  onChange={e => setNewClassroom({ ...newClassroom, name: e.target.value })}
-                />
+        {/* Create Classroom Modal */}
+        {showCreateModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center">
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowCreateModal(false)} />
+            <div className="relative bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 max-w-lg w-full mx-4 z-10">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-6">Create Classroom</h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Classroom Name *</label>
+                  <input
+                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                    placeholder="e.g., Chemistry Grade 10-A"
+                    value={newClassroom.name}
+                    onChange={e => setNewClassroom({ ...newClassroom, name: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Subject *</label>
+                  <select
+                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                    value={newClassroom.subject}
+                    onChange={e => setNewClassroom({ ...newClassroom, subject: e.target.value })}
+                  >
+                    {SUBJECTS.map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Description <span className="text-slate-400 dark:text-slate-500 font-normal">(Optional)</span></label>
+                  <textarea
+                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                    placeholder="Brief description of this classroom..."
+                    rows={3}
+                    value={newClassroom.description}
+                    onChange={e => setNewClassroom({ ...newClassroom, description: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Cover Image <span className="text-slate-400 dark:text-slate-500 font-normal">(Optional)</span></label>
+                  <button
+                    type="button"
+                    onClick={() => coverInputRef.current?.click()}
+                    className="w-full h-32 rounded-lg border-2 border-dashed border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:border-primary/50 hover:bg-primary/5 dark:hover:bg-slate-700/50 transition-all flex flex-col items-center justify-center gap-2 overflow-hidden relative"
+                  >
+                    {coverPreview ? (
+                      <>
+                        <img src={coverPreview} alt="Cover" className="w-full h-full object-cover absolute inset-0" />
+                        <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                          <span className="text-white text-sm font-semibold">Change Image</span>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <span className="material-symbols-outlined text-slate-400 dark:text-slate-500 text-2xl">add_photo_alternate</span>
+                        <span className="text-xs text-slate-400 dark:text-slate-500">Click to upload cover image</span>
+                      </>
+                    )}
+                  </button>
+                  <input
+                    ref={coverInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={e => {
+                      const f = e.target.files?.[0];
+                      if (f) { setCoverFile(f); setCoverPreview(URL.createObjectURL(f)); }
+                    }}
+                  />
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Subject *</label>
-                <select
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                  value={newClassroom.subject}
-                  onChange={e => setNewClassroom({ ...newClassroom, subject: e.target.value })}
-                >
-                  {SUBJECTS.map(s => <option key={s} value={s}>{s}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Description <span className="text-slate-400 font-normal">(Optional)</span></label>
-                <textarea
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                  placeholder="Brief description of this classroom..."
-                  rows={3}
-                  value={newClassroom.description}
-                  onChange={e => setNewClassroom({ ...newClassroom, description: e.target.value })}
-                />
-              </div>
-              {/* Cover Image Upload */}
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Cover Image <span className="text-slate-400 font-normal">(Optional)</span></label>
+              <div className="flex justify-end gap-3 mt-6">
                 <button
-                  type="button"
-                  onClick={() => coverInputRef.current?.click()}
-                  className="w-full h-32 rounded-lg border-2 border-dashed border-slate-200 bg-slate-50 hover:border-primary/50 hover:bg-primary/5 transition-all flex flex-col items-center justify-center gap-2 overflow-hidden relative"
+                  onClick={() => setShowCreateModal(false)}
+                  className="px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
                 >
-                  {coverPreview ? (
-                    <>
-                      <img src={coverPreview} alt="Cover" className="w-full h-full object-cover absolute inset-0" />
-                      <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                        <span className="text-white text-sm font-semibold">Change Image</span>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <span className="material-symbols-outlined text-slate-400 text-2xl">add_photo_alternate</span>
-                      <span className="text-xs text-slate-400">Click to upload cover image</span>
-                    </>
-                  )}
+                  Cancel
                 </button>
-                <input
-                  ref={coverInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={e => {
-                    const f = e.target.files?.[0];
-                    if (f) { setCoverFile(f); setCoverPreview(URL.createObjectURL(f)); }
-                  }}
-                />
+                <button
+                  onClick={handleCreateClassroom}
+                  disabled={creating || !newClassroom.name.trim()}
+                  className="px-6 py-2.5 rounded-lg bg-primary text-sm font-bold text-white hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {creating && <span className="material-symbols-outlined text-lg animate-spin">progress_activity</span>}
+                  Create
+                </button>
               </div>
             </div>
-            <div className="flex justify-end gap-3 mt-6">
-              <button
-                onClick={() => setShowCreateModal(false)}
-                className="px-4 py-2.5 rounded-lg border border-slate-200 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleCreateClassroom}
-                disabled={creating || !newClassroom.name.trim()}
-                className="px-6 py-2.5 rounded-lg bg-primary text-sm font-bold text-white hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-              >
-                {creating && <span className="material-symbols-outlined text-lg animate-spin">progress_activity</span>}
-                Create
-              </button>
-            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

@@ -173,15 +173,17 @@ export default function ClassroomDetail() {
   }
 
   if (loading || !classroom) return (
-    <div className="bg-background-light min-h-screen" style={{ fontFamily: "'Inter', sans-serif" }}>
-      <TopBar />
-      <main className="max-w-[1280px] mx-auto p-6 lg:p-10">
-        <div className="animate-pulse space-y-6">
-          <div className="h-8 bg-slate-200 rounded w-64" />
-          <div className="h-48 bg-slate-200 rounded-xl" />
-          <div className="h-64 bg-slate-200 rounded-xl" />
-        </div>
-      </main>
+    <div className="dark">
+      <div className="bg-background-light dark:bg-background-dark min-h-screen font-display text-slate-900 dark:text-slate-100" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <TopBar />
+        <main className="max-w-[1280px] mx-auto p-6 lg:p-10">
+          <div className="animate-pulse space-y-6">
+            <div className="h-8 bg-slate-200 dark:bg-slate-800 rounded w-64" />
+            <div className="h-48 bg-slate-200 dark:bg-slate-800 rounded-xl" />
+            <div className="h-64 bg-slate-200 dark:bg-slate-800 rounded-xl" />
+          </div>
+        </main>
+      </div>
     </div>
   );
 
@@ -192,14 +194,15 @@ export default function ClassroomDetail() {
   const subjectBadge = SUBJECT_COLORS[classroom.subject] || SUBJECT_COLORS.Other;
 
   return (
-    <div className="bg-background-light min-h-screen" style={{ fontFamily: "'Inter', sans-serif" }}>
-      <TopBar />
-      <main className="max-w-[1280px] w-full mx-auto px-6 py-6 lg:px-10">
+    <div className="dark">
+      <div className="bg-background-light dark:bg-background-dark min-h-screen font-display text-slate-900 dark:text-slate-100" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <TopBar />
+        <main className="max-w-[1280px] w-full mx-auto px-6 py-6 lg:px-10">
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-sm text-slate-500 mb-6">
+        <nav className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 mb-6">
           <Link to="/dashboard" className="hover:text-primary transition-colors">Dashboard</Link>
           <span className="material-symbols-outlined text-sm">chevron_right</span>
-          <span className="text-slate-900 font-medium">{classroom.name}</span>
+          <span className="text-slate-900 dark:text-slate-100 font-medium">{classroom.name}</span>
         </nav>
 
         {/* Cover Image Header */}
@@ -218,17 +221,17 @@ export default function ClassroomDetail() {
             </div>
             <div>
               <div className="flex items-center gap-3 mb-1">
-                <h1 className="text-3xl font-bold tracking-tight">{classroom.name}</h1>
+                <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">{classroom.name}</h1>
                 <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold uppercase ${subjectBadge}`}>{classroom.subject}</span>
               </div>
-              <p className="text-slate-500">{classroom.description || 'No description'} • {classroom.studentCount} Students Enrolled</p>
+              <p className="text-slate-500 dark:text-slate-400">{classroom.description || 'No description'} • {classroom.studentCount} Students Enrolled</p>
             </div>
           </div>
           <div className="flex gap-3">
-            <button onClick={() => setShowEditModal(true)} className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50 transition-colors">
+            <button onClick={() => setShowEditModal(true)} className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
               <span className="material-symbols-outlined text-lg">edit</span> Edit
             </button>
-            <button onClick={() => setConfirmDialog({ open: true, title: 'Archive Classroom', message: 'Are you sure you want to archive this classroom? Students will no longer be able to access it.', onConfirm: archiveClassroom })} className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-slate-900 text-white text-sm font-semibold hover:opacity-90 transition-opacity">
+            <button onClick={() => setConfirmDialog({ open: true, title: 'Archive Classroom', message: 'Are you sure you want to archive this classroom? Students will no longer be able to access it.', onConfirm: archiveClassroom })} className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-red-500/30 text-red-600 dark:text-red-400 bg-transparent text-sm font-semibold hover:bg-red-500/10 transition-colors">
               <span className="material-symbols-outlined text-lg">archive</span> Archive
             </button>
           </div>
@@ -266,18 +269,18 @@ export default function ClassroomDetail() {
               <span className="material-symbols-outlined text-[200px]" style={{ fontVariationSettings: "'FILL' 1" }}>qr_code_2</span>
             </div>
           </div>
-          <div className="bg-white p-6 rounded-xl border border-slate-200 flex flex-col justify-between">
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
             <div>
-              <h3 className="font-bold text-slate-900 mb-1">Quick Stats</h3>
-              <p className="text-sm text-slate-500 mb-4">Class overview</p>
+              <h3 className="font-bold text-slate-900 dark:text-slate-100 mb-1">Quick Stats</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">Class overview</p>
             </div>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-slate-600">Students</span>
+                <span className="text-sm text-slate-600 dark:text-slate-300">Students</span>
                 <span className="text-lg font-bold text-primary">{classroom.studentCount}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-slate-600">Experiments</span>
+                <span className="text-sm text-slate-600 dark:text-slate-300">Experiments</span>
                 <span className="text-lg font-bold text-emerald-500">{classroom.experimentIds?.length || 0}</span>
               </div>
             </div>
@@ -285,12 +288,12 @@ export default function ClassroomDetail() {
         </div>
 
         {/* Tabs */}
-        <div className="mb-6 border-b border-slate-200">
+        <div className="mb-6 border-b border-slate-200 dark:border-slate-800">
           <div className="flex gap-8">
-            <button onClick={() => setActiveTab('students')} className={`pb-4 border-b-2 font-bold text-sm flex items-center gap-2 transition-colors ${activeTab === 'students' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>
+            <button onClick={() => setActiveTab('students')} className={`pb-4 border-b-2 font-bold text-sm flex items-center gap-2 transition-colors ${activeTab === 'students' ? 'border-primary text-primary' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}>
               <span className="material-symbols-outlined text-lg">group</span> Students ({members.length})
             </button>
-            <button onClick={() => setActiveTab('experiments')} className={`pb-4 border-b-2 font-medium text-sm flex items-center gap-2 transition-colors ${activeTab === 'experiments' ? 'border-primary text-primary font-bold' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>
+            <button onClick={() => setActiveTab('experiments')} className={`pb-4 border-b-2 font-medium text-sm flex items-center gap-2 transition-colors ${activeTab === 'experiments' ? 'border-primary text-primary font-bold' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}>
               <span className="material-symbols-outlined text-lg">biotech</span> Experiments ({experiments.length})
             </button>
           </div>
@@ -300,12 +303,12 @@ export default function ClassroomDetail() {
         {activeTab === 'students' && (
           <div className="space-y-6">
             {members.length === 0 ? (
-              <div className="bg-white rounded-xl border border-slate-200"><EmptyState icon="groups" title="No students yet" description="Share the join code with your students so they can join this classroom." /></div>
+              <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800"><EmptyState icon="groups" title="No students yet" description="Share the join code with your students so they can join this classroom." /></div>
             ) : (
-              <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+              <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="bg-slate-50 text-slate-500 text-xs font-bold uppercase tracking-wider">
+                    <tr className="bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider">
                       <th className="px-6 py-4">Student Name</th>
                       <th className="px-6 py-4">Email</th>
                       <th className="px-6 py-4">Joined</th>
@@ -313,22 +316,22 @@ export default function ClassroomDetail() {
                       <th className="px-6 py-4 text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-200">
+                  <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                     {members.map(m => (
-                      <tr key={m.id} className="hover:bg-slate-50 transition-colors">
+                      <tr key={m.id} className="hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center gap-3">
-                            <div className="size-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold">
+                            <div className="size-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xs font-bold">
                               {generateInitials(m.displayName || '', m.email)}
                             </div>
-                            <span className="font-semibold text-slate-900 text-sm">{m.displayName || 'Unknown'}</span>
+                            <span className="font-semibold text-slate-900 dark:text-slate-100 text-sm">{m.displayName || 'Unknown'}</span>
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-sm text-slate-600">{m.email || '—'}</td>
-                        <td className="px-6 py-4 text-sm text-slate-500">{formatDate(m.joinedAt)}</td>
+                        <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">{m.email || '—'}</td>
+                        <td className="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">{formatDate(m.joinedAt)}</td>
                         <td className="px-6 py-4"><StatusBadge status={m.status || 'active'} /></td>
                         <td className="px-6 py-4 text-right">
-                          <button onClick={() => setConfirmDialog({ open: true, title: 'Remove Student', message: `Remove ${m.displayName || 'this student'} from the classroom?`, onConfirm: () => { removeMember(m); setConfirmDialog(p => ({ ...p, open: false })); } })} className="text-red-500 hover:text-red-700 transition-colors">
+                          <button onClick={() => setConfirmDialog({ open: true, title: 'Remove Student', message: `Remove ${m.displayName || 'this student'} from the classroom?`, onConfirm: () => { removeMember(m); setConfirmDialog(p => ({ ...p, open: false })); } })} className="text-red-500 hover:text-red-700 dark:hover:text-red-400 transition-colors">
                             <span className="material-symbols-outlined text-lg">person_remove</span>
                           </button>
                         </td>
@@ -350,28 +353,28 @@ export default function ClassroomDetail() {
               </button>
             </div>
             {experiments.length === 0 ? (
-              <div className="bg-white rounded-xl border border-slate-200"><EmptyState icon="science" title="No experiments assigned" description="Assign published experiments from your library to this classroom." actionLabel="Assign Experiment" onAction={openAssignModal} /></div>
+              <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800"><EmptyState icon="science" title="No experiments assigned" description="Assign published experiments from your library to this classroom." actionLabel="Assign Experiment" onAction={openAssignModal} /></div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {experiments.map(exp => (
-                  <div key={exp.id} className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-all p-5">
+                  <div key={exp.id} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm hover:shadow-md transition-all p-5">
                     <div className="flex items-start justify-between mb-3">
                       <div>
-                        <h4 className="font-bold text-slate-900 mb-1">{exp.title || 'Untitled'}</h4>
-                        <p className="text-xs text-slate-500">{exp.category || 'Science'}</p>
+                        <h4 className="font-bold text-slate-900 dark:text-slate-100 mb-1">{exp.title || 'Untitled'}</h4>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">{exp.category || 'Science'}</p>
                       </div>
                       <StatusBadge status={exp.status || 'draft'} />
                     </div>
-                    <div className="text-xs text-slate-500 mb-4">
+                    <div className="text-xs text-slate-500 dark:text-slate-400 mb-4">
                       {submissionCounts[exp.id] || 0} / {classroom.studentCount} submitted
                     </div>
-                    <div className="w-full bg-slate-100 h-1.5 rounded-full mb-4">
+                    <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full mb-4">
                       <div className="bg-primary h-full rounded-full" style={{ width: `${classroom.studentCount > 0 ? ((submissionCounts[exp.id] || 0) / classroom.studentCount) * 100 : 0}%` }} />
                     </div>
                     <div className="flex items-center gap-2">
                       <Link to={`/evaluation/${classroomId}/${exp.id}`} className="flex-1 py-2 text-xs font-bold text-white bg-primary rounded-lg hover:bg-primary/90 text-center transition-colors">View Submissions</Link>
-                      <Link to={`/experiment/${exp.id}`} className="flex-1 py-2 text-xs font-bold text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200 text-center transition-colors">Open Editor</Link>
-                      <button onClick={() => unassignExperiment(exp.id)} className="p-2 text-red-400 hover:text-red-600 transition-colors" title="Unassign">
+                      <Link to={`/experiment/${exp.id}`} className="flex-1 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-center transition-colors">Open Editor</Link>
+                      <button onClick={() => unassignExperiment(exp.id)} className="p-2 text-red-400 hover:text-red-600 dark:hover:text-red-400 transition-colors" title="Unassign">
                         <span className="material-symbols-outlined text-lg">link_off</span>
                       </button>
                     </div>
@@ -387,29 +390,29 @@ export default function ClassroomDetail() {
       {showEditModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowEditModal(false)} />
-          <div className="relative bg-white rounded-xl shadow-2xl p-6 max-w-lg w-full mx-4 z-10">
-            <h3 className="text-xl font-bold mb-6">Edit Classroom</h3>
+          <div className="relative bg-white dark:bg-slate-900 rounded-xl shadow-2xl p-6 max-w-lg w-full mx-4 z-10">
+            <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-6">Edit Classroom</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Classroom Name</label>
-                <input className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" value={editForm.name} onChange={e => setEditForm({ ...editForm, name: e.target.value })} />
+                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Classroom Name</label>
+                <input className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" value={editForm.name} onChange={e => setEditForm({ ...editForm, name: e.target.value })} />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Subject</label>
-                <select className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" value={editForm.subject} onChange={e => setEditForm({ ...editForm, subject: e.target.value })}>
+                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Subject</label>
+                <select className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" value={editForm.subject} onChange={e => setEditForm({ ...editForm, subject: e.target.value })}>
                   {SUBJECTS.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Description</label>
-                <textarea className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" rows={3} value={editForm.description} onChange={e => setEditForm({ ...editForm, description: e.target.value })} />
+                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Description</label>
+                <textarea className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" rows={3} value={editForm.description} onChange={e => setEditForm({ ...editForm, description: e.target.value })} />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Cover Image</label>
+                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Cover Image</label>
                 <button
                   type="button"
                   onClick={() => editCoverRef.current?.click()}
-                  className="w-full h-28 rounded-lg border-2 border-dashed border-slate-200 bg-slate-50 hover:border-primary/50 hover:bg-primary/5 transition-all flex flex-col items-center justify-center gap-1 overflow-hidden relative"
+                  className="w-full h-28 rounded-lg border-2 border-dashed border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:border-primary/50 hover:bg-primary/5 dark:hover:bg-slate-700/50 transition-all flex flex-col items-center justify-center gap-1 overflow-hidden relative"
                 >
                   {editCoverPreview ? (
                     <>
@@ -420,8 +423,8 @@ export default function ClassroomDetail() {
                     </>
                   ) : (
                     <>
-                      <span className="material-symbols-outlined text-slate-400 text-xl">add_photo_alternate</span>
-                      <span className="text-xs text-slate-400">Upload cover</span>
+                      <span className="material-symbols-outlined text-slate-400 dark:text-slate-500 text-xl">add_photo_alternate</span>
+                      <span className="text-xs text-slate-400 dark:text-slate-500">Upload cover</span>
                     </>
                   )}
                 </button>
@@ -429,7 +432,7 @@ export default function ClassroomDetail() {
               </div>
             </div>
             <div className="flex justify-end gap-3 mt-6">
-              <button onClick={() => setShowEditModal(false)} className="px-4 py-2.5 rounded-lg border border-slate-200 text-sm font-semibold text-slate-700 hover:bg-slate-50">Cancel</button>
+              <button onClick={() => setShowEditModal(false)} className="px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800">Cancel</button>
               <button onClick={saveEdit} className="px-6 py-2.5 rounded-lg bg-primary text-sm font-bold text-white hover:bg-primary/90">Save Changes</button>
             </div>
           </div>
@@ -440,23 +443,23 @@ export default function ClassroomDetail() {
       {showAssignModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowAssignModal(false)} />
-          <div className="relative bg-white rounded-xl shadow-2xl p-6 max-w-lg w-full mx-4 z-10 max-h-[80vh] flex flex-col">
-            <h3 className="text-xl font-bold mb-4">Assign Experiments</h3>
-            <input className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-sm mb-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" placeholder="Search experiments..." value={searchFilter} onChange={e => setSearchFilter(e.target.value)} />
+          <div className="relative bg-white dark:bg-slate-900 rounded-xl shadow-2xl p-6 max-w-lg w-full mx-4 z-10 max-h-[80vh] flex flex-col">
+            <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-4">Assign Experiments</h3>
+            <input className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm mb-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" placeholder="Search experiments..." value={searchFilter} onChange={e => setSearchFilter(e.target.value)} />
             <div className="flex-1 overflow-y-auto space-y-2 mb-4">
               {availableExperiments.filter(e => e.title?.toLowerCase().includes(searchFilter.toLowerCase())).map(exp => (
-                <label key={exp.id} className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 cursor-pointer">
+                <label key={exp.id} className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer">
                   <input type="checkbox" className="rounded text-primary focus:ring-primary h-4 w-4" checked={selectedExpIds.includes(exp.id)} onChange={e => setSelectedExpIds(e.target.checked ? [...selectedExpIds, exp.id] : selectedExpIds.filter(id => id !== exp.id))} />
                   <div>
-                    <p className="text-sm font-semibold">{exp.title}</p>
-                    <p className="text-xs text-slate-500">{exp.category}</p>
+                    <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{exp.title}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">{exp.category}</p>
                   </div>
                 </label>
               ))}
-              {availableExperiments.length === 0 && <p className="text-sm text-slate-500 text-center py-8">No published experiments available to assign.</p>}
+              {availableExperiments.length === 0 && <p className="text-sm text-slate-500 dark:text-slate-400 text-center py-8">No published experiments available to assign.</p>}
             </div>
             <div className="flex justify-end gap-3">
-              <button onClick={() => setShowAssignModal(false)} className="px-4 py-2.5 rounded-lg border border-slate-200 text-sm font-semibold text-slate-700 hover:bg-slate-50">Cancel</button>
+              <button onClick={() => setShowAssignModal(false)} className="px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800">Cancel</button>
               <button onClick={assignExperiments} disabled={selectedExpIds.length === 0} className="px-6 py-2.5 rounded-lg bg-primary text-sm font-bold text-white hover:bg-primary/90 disabled:opacity-50">Assign Selected ({selectedExpIds.length})</button>
             </div>
           </div>
@@ -464,6 +467,7 @@ export default function ClassroomDetail() {
       )}
 
       <ConfirmDialog open={confirmDialog.open} title={confirmDialog.title} message={confirmDialog.message} danger onConfirm={() => { confirmDialog.onConfirm(); setConfirmDialog(p => ({ ...p, open: false })); }} onCancel={() => setConfirmDialog(p => ({ ...p, open: false }))} />
+    </div>
     </div>
   );
 }
