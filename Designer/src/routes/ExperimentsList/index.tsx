@@ -378,7 +378,7 @@ export default function ExperimentsList() {
                         </button>
                         {openMenuId === exp.id && (
                           <>
-                            <div className="fixed inset-0 z-[100]" onClick={() => setOpenMenuId(null)} />
+                            <div className="fixed inset-0 z-30" onClick={() => setOpenMenuId(null)} />
                             <div className="absolute right-0 mt-1 w-40 bg-white dark:bg-slate-900 rounded-lg shadow-xl border border-slate-200 dark:border-slate-800 z-40 py-1">
                               <button onClick={() => duplicateExperiment(exp)} className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2">
                                 <span className="material-symbols-outlined text-base">content_copy</span> Duplicate
