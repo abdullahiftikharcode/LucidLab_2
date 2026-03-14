@@ -51,7 +51,7 @@ export type NodeType =
   | 'EvalString'
   | 'ApplyForceOnObject'
   | 'GetSpeed'
-  | 'GetTimeSinceLastLoopNode'
+  | 'GetTimeSinceLastLoop'
   | 'GetElapsedTime'
   | 'SetColor'
   | 'GetDistanceBetween'

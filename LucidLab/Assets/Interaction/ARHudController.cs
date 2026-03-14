@@ -3,6 +3,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using Assets.SceneManagement;
+using Assets.Logic;
+using Assets.SceneManagement;
 
 namespace Assets.Interaction
 {
@@ -38,6 +40,7 @@ namespace Assets.Interaction
         private WebViewObject _toolbelt;
         private WebViewObject _instruction;
         private WebViewObject _task;
+        private WebViewObject _confirm;   // full-screen submit-confirm overlay
 
         // Ready flags
         private bool _topBarReady;
@@ -227,16 +230,139 @@ namespace Assets.Interaction
                 case "toolbelt_ready":
                     _toolbeltReady = true;
                     break;
-                case "tool_reset":
-                    var sceneMgr = FindObjectOfType<SceneManager>();
-                    if (sceneMgr != null && sceneMgr.currentScene != null)
-                        sceneMgr.SetCurrentScene(sceneMgr.currentScene.sceneData);
+
+                case "open_submit_confirm":
+                    // Show the dedicated full-screen confirmation panel
+                    ShowSubmitConfirm();
                     break;
+
                 default:
                     Debug.Log($"[ARHud Toolbelt] {msg}");
                     break;
             }
         }
+
+        // ── Submit Confirm panel lifecycle ──────────────────────────────────────
+
+        private void ShowSubmitConfirm()
+        {
+            if (_confirm != null) return; // already visible
+
+            StartCoroutine(InitConfirmPanel());
+        }
+
+        private IEnumerator InitConfirmPanel()
+        {
+            var wv = (new GameObject("ARHud_SubmitConfirm")).AddComponent<WebViewObject>();
+
+            wv.Init(
+                cb:      (msg) => HandleConfirmMsg(msg),
+                err:     (msg) => Debug.LogError($"[ARHud_SubmitConfirm] Error: {msg}"),
+                httpErr: (msg) => Debug.LogError($"[ARHud_SubmitConfirm] HTTP Error: {msg}"),
+                started: (msg) => Debug.Log($"[ARHud_SubmitConfirm] Started: {msg}"),
+                ld:      (msg) =>
+                {
+                    Debug.Log($"[ARHud_SubmitConfirm] Loaded: {msg}");
+                    wv.SetVisibility(true);
+                },
+                transparent: true
+            );
+
+            while (!wv.IsInitialized())
+                yield return null;
+
+#if UNITY_ANDROID && !UNITY_EDITOR
+            wv.LoadURL("file:///android_asset/ar_submit_confirm.html");
+#else
+            string url = System.IO.Path.Combine(Application.streamingAssetsPath, "ar_submit_confirm.html").Replace("\\", "/");
+            wv.LoadURL("file://" + url);
+#endif
+            // Full-screen margins (0,0,0,0) so it covers everything
+            wv.SetMargins(0, 0, 0, 0);
+            _confirm = wv;
+        }
+
+        private void CloseSubmitConfirm()
+        {
+            if (_confirm == null) return;
+            Destroy(_confirm.gameObject);
+            _confirm = null;
+        }
+
+        private void HandleConfirmMsg(string msg)
+        {
+            if (msg == "confirm_ready")
+            {
+                PushContextToConfirm();
+            }
+            else if (msg == "close_submit_confirm")
+            {
+                CloseSubmitConfirm();
+            }
+            else if (msg == "submission_success")
+            {
+                Debug.Log("[ARHudController] Submission succeeded via WebView");
+                CloseSubmitConfirm();
+            }
+            else if (msg.StartsWith("submission_failed:"))
+            {
+                string error = msg.Substring("submission_failed:".Length);
+                Debug.LogError("[ARHudController] Submission failed via WebView: " + error);
+            }
+            else
+            {
+                Debug.Log($"[ARHud Confirm] {msg}");
+            }
+        }
+
+        private void PushContextToConfirm()
+        {
+            if (_confirm == null) return;
+
+            string stateJson = string.Empty;
+            float progress = 0f;
+            var subManager = FindObjectOfType<SubmissionManager>();
+            if (subManager != null)
+            {
+                stateJson = subManager.GetCurrentStateJson();
+            }
+
+            var logicMgr = FindObjectOfType<LogicManager>();
+            if (logicMgr != null && logicMgr.VariablesStore.TryGetValue("completion", out var comp))
+            {
+                float.TryParse(comp?.ToString(), out progress);
+            }
+
+            var context = new ConfirmContext
+            {
+                type = "confirm_context",
+                progress = progress,
+                status = progress >= 100f ? "Complete" : "In Progress",
+                studentId = PlayerPrefs.GetString("studentId", "unknown"),
+                experimentId = PlayerPrefs.GetString("experimentId", "unknown"),
+                classroomId = PlayerPrefs.GetString("classroomId", "unknown"),
+                expname = PlayerPrefs.GetString("expname", "Untitled"),
+                stateJson = stateJson
+            };
+
+            string json = JsonUtility.ToJson(context);
+            _confirm.EvaluateJS($"window.postMessage({json}, '*');");
+        }
+
+        [System.Serializable]
+        private class ConfirmContext
+        {
+            public string type;
+            public float  progress;
+            public string status;
+            public string studentId;
+            public string experimentId;
+            public string classroomId;
+            public string expname;
+            public string stateJson;
+        }
+
+
 
         private void HandleInstructionMsg(string msg)
         {
@@ -366,11 +492,12 @@ namespace Assets.Interaction
 
         void OnDestroy()
         {
-            if (_topBar != null) Destroy(_topBar.gameObject);
+            if (_topBar     != null) Destroy(_topBar.gameObject);
             if (_modeToggle != null) Destroy(_modeToggle.gameObject);
-            if (_toolbelt != null) Destroy(_toolbelt.gameObject);
-            if (_instruction != null) Destroy(_instruction.gameObject);
-            if (_task != null) Destroy(_task.gameObject);
+            if (_toolbelt   != null) Destroy(_toolbelt.gameObject);
+            if (_instruction!= null) Destroy(_instruction.gameObject);
+            if (_task       != null) Destroy(_task.gameObject);
+            if (_confirm    != null) Destroy(_confirm.gameObject);
         }
     }
 }

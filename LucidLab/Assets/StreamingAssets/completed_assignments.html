@@ -138,14 +138,48 @@
     countEl.textContent = submissions.length + " Total";
 
     submissions.forEach(function (sub) {
-      var grade = sub.completionPercentage || sub.quizScore || 0;
       var title = sub.experimentTitle || sub.experimentName || "Experiment";
+      var isGraded      = sub.status === "graded" || sub.status === "correct";
+      var isSubmitted   = sub.status === "submitted";
       var needsRevision = sub.status === "needs_revision";
-      var isIncorrect = sub.status === "incorrect";
-      var statusIcon = needsRevision ? "refresh" : (isIncorrect ? "cancel" : "check_circle");
-      var statusColor = needsRevision ? "text-amber-400" : (isIncorrect ? "text-rose-400" : "text-accent-success");
-      var gradeColor = needsRevision ? "text-amber-400" : (isIncorrect ? "text-rose-400" : "text-accent-success");
-      var gradeLabel = needsRevision ? "Needs Revision" : (isIncorrect ? "Incorrect" : "Grade: " + Math.round(grade) + "%");
+      var isIncorrect   = sub.status === "incorrect";
+
+      // Derive display strings
+      var statusIcon, statusColor, gradeColor, gradeLabel;
+
+      if (isGraded) {
+        statusIcon  = "workspace_premium";
+        statusColor = "text-accent-success";
+        gradeColor  = "text-accent-success";
+        // Prefer instructor-assigned grade text; fall back to numeric pct
+        if (sub.grade) {
+          gradeLabel = "Grade: " + sub.grade;
+        } else {
+          var numGrade = sub.completionPct || sub.completionPercentage || sub.quizScore || 0;
+          gradeLabel = "Grade: " + Math.round(numGrade) + "%";
+        }
+      } else if (isSubmitted) {
+        statusIcon  = "schedule_send";
+        statusColor = "text-cyan-400";
+        gradeColor  = "text-cyan-400";
+        gradeLabel  = "Submitted — Awaiting Grade";
+      } else if (needsRevision) {
+        statusIcon  = "refresh";
+        statusColor = "text-amber-400";
+        gradeColor  = "text-amber-400";
+        gradeLabel  = "Needs Revision";
+      } else if (isIncorrect) {
+        statusIcon  = "cancel";
+        statusColor = "text-rose-400";
+        gradeColor  = "text-rose-400";
+        gradeLabel  = "Incorrect";
+      } else {
+        statusIcon  = "check_circle";
+        statusColor = "text-accent-success";
+        gradeColor  = "text-accent-success";
+        gradeLabel  = "Completed";
+      }
+
       var feedback = sub.instructorFeedback || "";
       var card = document.createElement("div");
       card.className = "glass-panel p-4 rounded-xl flex items-center gap-4 transition-transform active:scale-[0.98]";
@@ -167,10 +201,25 @@
         '<div class="shrink-0">' +
           '<span class="material-symbols-outlined text-slate-600">chevron_right</span>' +
         '</div>';
+      card.addEventListener("click", function () {
+        parent.postMessage({ 
+          type: "request_data", 
+          request: "classroom_detail", 
+          classroomId: sub.classroomId, 
+          experimentId: sub.experimentId 
+        }, "*");
+        parent.postMessage("navigate:classroom", "*");
+      });
+
       if (needsRevision) {
         card.querySelector(".retake-btn").addEventListener("click", function (e) {
           e.stopPropagation();
-          parent.postMessage("unity:start_ar:" + JSON.stringify({ experimentId: sub.experimentId, title: title, mode: "retake" }), "*");
+          parent.postMessage("unity:start_ar:" + JSON.stringify({ 
+            experimentId: sub.experimentId, 
+            title: title, 
+            mode: "retake",
+            classroomId: sub.classroomId 
+          }), "*");
         });
       }
       list.appendChild(card);

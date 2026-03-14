@@ -109,7 +109,7 @@ function ExperimentDetailsModal({
 
 export default function SceneManager() {
   const { expName } = useParams();
-  const { createScene, scenes, experiment, updateExperiment } = useExperiment(expName!);
+  const { createScene, scenes, experiment, updateExperiment, loading } = useExperiment(expName!);
   const navigate = useNavigate();
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [hasCheckedInitial, setHasCheckedInitial] = useState(false);
@@ -216,7 +216,13 @@ export default function SceneManager() {
 
             {/* Scenes Grid */}
             <div className="flex-grow overflow-y-auto custom-scrollbar pr-2 min-h-0">
-              {scenes.length === 0 ? (
+              {loading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {[1, 2, 3].map(i => (
+                    <div key={i} className="h-48 rounded-2xl skeleton-shimmer" />
+                  ))}
+                </div>
+              ) : scenes.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center border-2 border-dashed border-slate-700/60 rounded-2xl bg-slate-800/20 text-center">
                   <div className="w-20 h-20 bg-slate-800 rounded-full flex items-center justify-center mb-6 shadow-inner border border-slate-700">
                     <span className="material-symbols-outlined text-4xl text-slate-500">movie_creation</span>

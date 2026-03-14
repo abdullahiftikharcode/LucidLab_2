@@ -73,6 +73,7 @@ export default function ExperimentsList() {
   const [sortBy, setSortBy] = useState('newest');
   const [confirmDelete, setConfirmDelete] = useState<{ open: boolean; id: string; title: string }>({ open: false, id: '', title: '' });
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
 
   useEffect(() => { if (currentUser) loadExperiments(); }, [currentUser]);
 
@@ -94,6 +95,7 @@ export default function ExperimentsList() {
   }
 
   async function createExperiment() {
+    setIsCreating(true);
     try {
       // Pre-generate the experiment ID so we can store it as `name` (used by the editor hooks)
       const expRef = doc(collection(db, 'experiments'));
@@ -110,7 +112,10 @@ export default function ExperimentsList() {
         updatedAt: serverTimestamp(),
       });
       navigate(`/experiment/${expRef.id}`);
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+      setIsCreating(false);
+    }
   }
 
   async function deleteExperiment(id: string) {
@@ -200,8 +205,17 @@ export default function ExperimentsList() {
               <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">My Experiments</h1>
               <p className="text-slate-500 dark:text-slate-400 mt-1">Manage and design your interactive AR science curriculum</p>
             </div>
-            <button onClick={createExperiment} className="flex items-center gap-2 rounded-lg h-11 px-6 bg-primary text-white text-sm font-bold shadow-sm shadow-primary/20 hover:bg-primary/90 transition-all">
-              <span className="material-symbols-outlined text-lg">add</span> New Experiment
+            <button 
+              onClick={createExperiment} 
+              disabled={isCreating}
+              className="flex items-center gap-2 rounded-lg h-11 px-6 bg-primary text-white text-sm font-bold shadow-sm shadow-primary/20 hover:bg-primary/90 transition-all disabled:opacity-70"
+            >
+              {isCreating ? (
+                <span className="material-symbols-outlined text-lg animate-spin">progress_activity</span>
+              ) : (
+                <span className="material-symbols-outlined text-lg">add</span>
+              )}
+              {isCreating ? 'Creating...' : 'New Experiment'}
             </button>
           </div>
 
@@ -245,7 +259,15 @@ export default function ExperimentsList() {
 
           {loading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {[1, 2, 3, 4].map(i => <div key={i} className="animate-pulse rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 h-72" />)}
+              {[1, 2, 3, 4].map(i => (
+                <div key={i} className="relative overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 h-72">
+                  <div className="h-40 skeleton-shimmer" />
+                  <div className="p-4 space-y-3">
+                    <div className="h-4 w-2/3 rounded skeleton-shimmer" />
+                    <div className="h-3 w-1/2 rounded skeleton-shimmer" />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : filtered.length === 0 ? (
             <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">

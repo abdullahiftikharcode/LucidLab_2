@@ -21,6 +21,7 @@ import DashboardHome from './routes/Dashboard';
 import ClassroomDetail from './routes/ClassroomDetail';
 import ExperimentsList from './routes/ExperimentsList';
 import EvaluationPage from './routes/Evaluation';
+import NotificationsPage from './routes/Notifications';
 
 const router = createBrowserRouter([
   // Landing page as default
@@ -33,6 +34,7 @@ const router = createBrowserRouter([
   { path: '/classrooms/:classroomId', element: <AuthGuard><ClassroomDetail /></AuthGuard> },
   { path: '/experiments', element: <AuthGuard><ExperimentsList /></AuthGuard> },
   { path: '/evaluation/:classroomId/:experimentId', element: <AuthGuard><EvaluationPage /></AuthGuard> },
+  { path: '/notifications', element: <AuthGuard><NotificationsPage /></AuthGuard> },
 
   // EXISTING — DO NOT TOUCH
   {
@@ -61,7 +63,7 @@ export default function App() {
             <ExperimentRoot>
               <ColorModeScript />
               <ChakraProvider theme={theme}>
-                <React.Suspense fallback={<Skeleton />}>
+                <React.Suspense fallback={<div className="w-screen h-screen skeleton-shimmer" />}>
                   <RouterProvider router={router} />
                 </React.Suspense>
               </ChakraProvider>

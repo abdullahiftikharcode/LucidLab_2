@@ -107,13 +107,14 @@
 
     .modal-icon {
       width: 48px; height: 48px;
-      background: color-mix(in srgb, var(--primary) 15%, transparent);
-      border: 1px solid color-mix(in srgb, var(--primary) 30%, transparent);
+      background: color-mix(in srgb, var(--primary) 5%, transparent);
+      border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent);
       border-radius: 10px;
-      display: grid; place-items: center;
+      display: flex; align-items: center; justify-content: center;
       margin-bottom: 16px;
+      overflow: hidden;
     }
-    .modal-icon .material-symbols-outlined { font-size: 30px; color: var(--primary); }
+    .modal-icon img { width: 100%; height: 100%; object-fit: cover; }
 
     .modal-title { font-size: 20px; font-weight: 700; letter-spacing: -.02em; }
     .modal-desc  { font-size: 13px; color: var(--muted); margin-top: 4px; }
@@ -278,6 +279,7 @@
     <iframe id="frame-help"                          src="help_support.html"></iframe>
     <iframe id="frame-privacy"                       src="privacy_policy.html"></iframe>
     <iframe id="frame-app_settings"                   src="app_settings.html"></iframe>
+    <iframe id="frame-notifications"                 src="notifications.html"></iframe>
   </div>
 
   <!-- ===== Join-Class Modal (inline) ===== -->
@@ -288,7 +290,7 @@
         <span class="material-symbols-outlined">close</span>
       </button>
       <div class="modal-icon">
-        <span class="material-symbols-outlined">school</span>
+        <img src="images/app_logo.png" alt="LucidLab Logo" />
       </div>
       <div class="modal-title">Join a Classroom</div>
       <p class="modal-desc">Enter the join code provided by your teacher to access the lab.</p>
@@ -329,7 +331,22 @@
       <span class="lbl">Profile</span>
       <span class="dot"></span>
     </button>
+    <button class="nav-btn" data-target="notifications">
+      <span class="material-symbols-outlined">notifications</span>
+      <span class="lbl">Inbox</span>
+      <span id="notif-badge" class="notif-badge"></span>
+      <span class="dot"></span>
+    </button>
   </nav>
+
+  <style>
+    .notif-badge { 
+      position: absolute; top: 8px; right: 20%; 
+      width: 8px; height: 8px; border-radius: 50%; 
+      background: #ff3b30; box-shadow: 0 0 8px #ff3b30; 
+      display: none; 
+    }
+  </style>
 
   <script>
     /* ==========================================================
@@ -361,6 +378,8 @@
        ========================================================== */
     var current = "login";          // login | signup | home | experiments | completed | profile | classroom
     var experimentsSub = "active";  // tracks last sub-tab under Experiments
+    var unsubs = {};                // tracks Firestore listeners for cleanup
+    var currentNotifications = [];
 
     var frames = {
       login:            document.getElementById("frame-login"),
@@ -374,7 +393,8 @@
       appearance:       document.getElementById("frame-appearance"),
       help:             document.getElementById("frame-help"),
       privacy:          document.getElementById("frame-privacy"),
-      app_settings:     document.getElementById("frame-app_settings")
+      app_settings:     document.getElementById("frame-app_settings"),
+      notifications:    document.getElementById("frame-notifications")
     };
 
     var screensDiv = document.getElementById("screens");
@@ -431,8 +451,14 @@
       }
 
       current = target;
-      if (target === "experiments") experimentsSub = "active";
-      if (target === "completed")  experimentsSub = "completed";
+      if (target === "experiments") {
+        experimentsSub = "active";
+        loadSubmissions();
+      }
+      if (target === "completed") {
+        experimentsSub = "completed";
+        loadSubmissions();
+      }
     }
 
     navBtns.forEach(function (btn) {
@@ -649,6 +675,7 @@
       }
 
       else if (action === "logout") {
+        Object.keys(unsubs).forEach(function(k) { if(unsubs[k]) unsubs[k](); unsubs[k] = null; });
         auth.signOut();
       }
     }
@@ -713,10 +740,46 @@
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
           });
         }
+        
+        // Pass the authenticated UID down to Unity native so it can use it for Submissions
+        // (Unity native Firebase has no user since login happens purely in WebView)
+        sendToUnity("set_student_id:" + user.uid);
+
         navigate("home");
         loadClassrooms();
         loadSubmissions();
+        loadNotifications();
       });
+    }
+
+    /* ==========================================================
+       Load Notifications
+       ========================================================== */
+    function loadNotifications() {
+      if (!currentUserData) return;
+      if (unsubs.notifications) unsubs.notifications();
+
+      unsubs.notifications = db.collection("notifications")
+        .where("userId", "==", currentUserData.uid)
+        .onSnapshot(function (snap) {
+          var all = [];
+          var unread = 0;
+          snap.forEach(function (d) {
+            var n = d.data();
+            n.id = d.id;
+            all.push(n);
+            if (!n.isRead) unread++;
+          });
+          // In-memory sort
+          all.sort(function(a, b) {
+            var t1 = a.createdAt ? (a.createdAt.toDate ? a.createdAt.toDate().getTime() : new Date(a.createdAt).getTime()) : 0;
+            var t2 = b.createdAt ? (b.createdAt.toDate ? b.createdAt.toDate().getTime() : new Date(b.createdAt).getTime()) : 0;
+            return t2 - t1;
+          });
+          currentNotifications = all.slice(0, 20);
+          document.getElementById("notif-badge").style.display = unread > 0 ? "block" : "none";
+          broadcastToFrame("notifications", { type: "notifications", data: currentNotifications });
+        }, function(err) { console.error("Notif listener error:", err); });
     }
 
     /* ==========================================================
@@ -728,9 +791,10 @@
         return;
       }
 
+      if (unsubs.classrooms) unsubs.classrooms();
       var ids = currentUserData.classroomIds.slice(0, 30);
-      db.collection("classrooms").where(firebase.firestore.FieldPath.documentId(), "in", ids)
-        .get().then(function (snap) {
+      unsubs.classrooms = db.collection("classrooms").where(firebase.firestore.FieldPath.documentId(), "in", ids)
+        .onSnapshot(function (snap) {
           var classrooms = [];
           var instructorIds = [];
           snap.forEach(function (doc) {
@@ -756,14 +820,16 @@
               });
               broadcastToFrame("home", { type: "classrooms", data: classrooms, user: currentUserData });
             });
-        });
+        }, function(err) { console.error("Classrooms listener error:", err); });
     }
 
     /* ==========================================================
        Load experiments for a classroom
        ========================================================== */
-    function loadClassroomExperiments(classroomId) {
-      db.collection("classrooms").doc(classroomId).get().then(function (doc) {
+    function loadClassroomExperiments(classroomId, selectedExperimentId) {
+      if (unsubs.classroom_detail) unsubs.classroom_detail();
+      
+      unsubs.classroom_detail = db.collection("classrooms").doc(classroomId).onSnapshot(function (doc) {
         if (!doc.exists) return;
         var classroom = doc.data();
         classroom.id = doc.id;
@@ -774,7 +840,7 @@
           classroom.instructorName = instructor.displayName;
 
           if (!classroom.experimentIds || classroom.experimentIds.length === 0) {
-            broadcastToFrame("classroom", { type: "classroom_detail", classroom: classroom, experiments: [] });
+            broadcastToFrame("classroom", { type: "classroom_detail", classroom: classroom, experiments: [], selectedExperimentId: selectedExperimentId });
             return;
           }
 
@@ -790,21 +856,26 @@
 
               // Attach student's submissions for these experiments
               if (currentUserData) {
-                db.collection("submissions")
+                // We use a listener for submissions here too to catch grading changes
+                if (unsubs.classroom_subs) unsubs.classroom_subs();
+                unsubs.classroom_subs = db.collection("submissions")
                   .where("studentId", "==", currentUserData.uid)
                   .where("classroomId", "==", classroomId)
-                  .get().then(function (subSnap) {
+                  .onSnapshot(function (subSnap) {
                     var subMap = {};
                     subSnap.forEach(function (s) { var sd = s.data(); subMap[sd.experimentId] = sd; });
                     experiments.forEach(function (e) { if (subMap[e.id]) e.submission = subMap[e.id]; });
-                    broadcastToFrame("classroom", { type: "classroom_detail", classroom: classroom, experiments: experiments });
+                    broadcastToFrame("classroom", { type: "classroom_detail", classroom: classroom, experiments: experiments, selectedExperimentId: selectedExperimentId });
+                    // Only use selectedExperimentId once
+                    selectedExperimentId = null; 
                   });
               } else {
-                broadcastToFrame("classroom", { type: "classroom_detail", classroom: classroom, experiments: experiments });
+                broadcastToFrame("classroom", { type: "classroom_detail", classroom: classroom, experiments: experiments, selectedExperimentId: selectedExperimentId });
+                selectedExperimentId = null;
               }
             });
         });
-      });
+      }, function(err) { console.error("Classroom detail listener error:", err); });
     }
 
     /* ==========================================================
@@ -812,15 +883,18 @@
        ========================================================== */
     function loadSubmissions() {
       if (!currentUserData) return;
-      db.collection("submissions")
+      if (unsubs.submissions) unsubs.submissions();
+
+      unsubs.submissions = db.collection("submissions")
         .where("studentId", "==", currentUserData.uid)
-        .get().then(function (snap) {
+        .onSnapshot(function (snap) {
           var active = [];
           var completed = [];
           snap.forEach(function (doc) {
             var s = doc.data();
             s.id = doc.id;
-            if (s.status === "graded" || s.status === "correct" || s.status === "incorrect" || s.status === "needs_revision") {
+            // "submitted" is considered completed by the user (it moves out of To Do)
+            if (s.status === "submitted" || s.status === "graded" || s.status === "correct" || s.status === "incorrect" || s.status === "needs_revision") {
               completed.push(s);
             } else {
               active.push(s);
@@ -829,7 +903,7 @@
 
           // Also load experiments that are assigned to student's classrooms but not yet submitted
           loadAssignedExperiments(active, completed);
-        });
+        }, function(err) { console.error("Submissions listener error:", err); });
     }
 
     function loadAssignedExperiments(existingActive, existingCompleted) {
@@ -878,7 +952,7 @@
                 if (sub) {
                   e.submission = sub;
                 }
-                var isCompleted = sub && (sub.status === "graded" || sub.status === "correct" || sub.status === "incorrect" || sub.status === "needs_revision");
+                var isCompleted = sub && (sub.status === "submitted" || sub.status === "graded" || sub.status === "correct" || sub.status === "incorrect" || sub.status === "needs_revision");
                 // Only show published/active experiments to students
                 if (!isCompleted && e.status !== "draft") {
                   activeAssignments.push(e);
@@ -1000,6 +1074,20 @@
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
           });
 
+          // Create notification for instructor
+          if (classDoc.data().instructorId) {
+            batch.set(db.collection("notifications").doc(), {
+              userId: classDoc.data().instructorId,
+              type: "student_joined",
+              title: "New Student Joined",
+              message: (currentUserData.displayName || "A student") + " joined " + (classDoc.data().name || "your classroom"),
+              link: "/classrooms/" + classId,
+              isRead: false,
+              createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+              data: { classroomId: classId, studentId: currentUserData.uid }
+            });
+          }
+
           batch.commit().then(function () {
             currentUserData.classroomIds = (currentUserData.classroomIds || []).concat(classId);
             joinBtn.disabled = false;
@@ -1028,8 +1116,9 @@
       if (data.type === "request_data") {
         if (data.request === "classrooms") loadClassrooms();
         if (data.request === "submissions") loadSubmissions();
+        if (data.request === "notifications") loadNotifications();
         if (data.request === "classroom_detail" && data.classroomId) {
-          loadClassroomExperiments(data.classroomId);
+          loadClassroomExperiments(data.classroomId, data.experimentId);
         }
       }
     });

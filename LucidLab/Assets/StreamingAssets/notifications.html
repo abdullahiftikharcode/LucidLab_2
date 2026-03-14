@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Notifications</title>
+  <link rel="stylesheet" href="fonts/fonts.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <style>
+    :root {
+      --bg: transparent;
+      --card-bg: rgba(25, 45, 48, 0.6);
+      --accent: #00f2ff;
+      --text: #e6f3f4;
+      --muted: #7f9398;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      padding: 24px;
+      font-family: Inter, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    header { margin-bottom: 24px; }
+    h1 { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; }
+    p.subtitle { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+    .notif-list { display: flex; flex-direction: column; gap: 12px; }
+
+    .notif-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex; gap: 14px;
+      transition: transform 0.1s, background 0.2s;
+      position: relative;
+    }
+    .notif-card:active { transform: scale(0.98); background: rgba(25, 45, 48, 0.8); }
+    .notif-card.unread { 
+      border-color: color-mix(in srgb, var(--accent) 30%, transparent); 
+      background: rgba(0, 242, 255, 0.03); 
+    }
+
+    .icon-box {
+      width: 44px; height: 44px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      display: grid; place-items: center;
+      flex-shrink: 0;
+    }
+    .notif-card.unread .icon-box { background: color-mix(in srgb, var(--accent) 15%, transparent); }
+    .icon-box .material-symbols-outlined { font-size: 22px; color: var(--muted); }
+    .notif-card.unread .icon-box .material-symbols-outlined { color: var(--accent); }
+
+    .content-box { flex-grow: 1; min-width: 0; }
+    .title { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 3px; }
+    .message { font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 6px; }
+    .time { font-size: 11px; color: color-mix(in srgb, var(--muted) 60%, transparent); font-weight: 500; }
+
+    .unread-dot {
+      position: absolute; top: 16px; right: 16px;
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+    }
+    .empty-icon {
+      font-size: 48px; color: rgba(255, 255, 255, 0.05); margin-bottom: 12px;
+    }
+
+    /* Skeleton Shimmer */
+    .skeleton {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+    .skeleton::after {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: linear-gradient(
+        90deg, 
+        transparent, 
+        rgba(255, 255, 255, 0.08), 
+        transparent
+      );
+      animation: shimmer 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    }
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Inbox</h1>
+    <p class="subtitle">Stay updated with your progress.</p>
+  </header>
+
+  <div id="notif-container" class="notif-list">
+    <!-- Loading skeleton -->
+    <div class="notif-card" style="border-color: rgba(255,255,255,0.05);">
+      <div class="icon-box skeleton"></div>
+      <div class="content-box">
+        <div class="skeleton" style="height: 14px; width: 60%; margin-bottom: 8px;"></div>
+        <div class="skeleton" style="height: 12px; width: 90%; margin-bottom: 6px;"></div>
+        <div class="skeleton" style="height: 11px; width: 30%;"></div>
+      </div>
+    </div>
+    <div class="notif-card" style="border-color: rgba(255,255,255,0.05); opacity: 0.7;">
+      <div class="icon-box skeleton"></div>
+      <div class="content-box">
+        <div class="skeleton" style="height: 14px; width: 40%; margin-bottom: 8px;"></div>
+        <div class="skeleton" style="height: 12px; width: 80%; margin-bottom: 6px;"></div>
+        <div class="skeleton" style="height: 11px; width: 25%;"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    firebase.initializeApp({
+      apiKey: "AIzaSyCbHACZX4VhFCj45hOr_TlK5KT5yi2dGSs",
+      authDomain: "campuspulse0.firebaseapp.com",
+      projectId: "campuspulse0",
+      storageBucket: "campuspulse0.firebasestorage.app",
+      messagingSenderId: "91092596944",
+      appId: "1:91092596944:web:4c78dae4fb11db961486d5"
+    });
+    var db = firebase.firestore();
+
+    function formatTime(ts) {
+      if (!ts) return "";
+      var date = ts.toDate ? ts.toDate() : new Date(ts);
+      var now = new Date();
+      var diff = now.getTime() - date.getTime();
+      var mins = Math.floor(diff / 60000);
+      if (mins < 1) return "Just now";
+      if (mins < 60) return mins + "m ago";
+      var hrs = Math.floor(mins / 60);
+      if (hrs < 24) return hrs + "h ago";
+      return date.toLocaleDateString();
+    }
+
+    function getIcon(type) {
+      switch(type) {
+        case "assignment_assigned": return "assignment";
+        case "grade_received": return "grade";
+        case "submission_received": return "inbox";
+        case "student_joined": return "person_add";
+        default: return "notifications";
+      }
+    }
+
+    function render(notifications) {
+      var container = document.getElementById("notif-container");
+      if (!notifications || notifications.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="material-symbols-outlined empty-icon">notifications_off</div>
+            <p style="font-size: 14px; color: var(--muted);">No notifications yet.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = "";
+      notifications.forEach(function(n) {
+        var card = document.createElement("div");
+        card.className = "notif-card" + (!n.isRead ? " unread" : "");
+        card.innerHTML = `
+          <div class="icon-box">
+            <span class="material-symbols-outlined">${getIcon(n.type)}</span>
+          </div>
+          <div class="content-box">
+            <div class="title">${n.title}</div>
+            <div class="message">${n.message}</div>
+            <div class="time">${formatTime(n.createdAt)}</div>
+          </div>
+          ${!n.isRead ? '<div class="unread-dot"></div>' : ''}
+        `;
+
+        card.addEventListener("click", function() {
+          // Mark as read
+          if (!n.isRead) {
+            db.collection("notifications").doc(n.id).update({ isRead: true });
+          }
+          // Navigate if link exists
+          if (n.link) {
+            // Student link format: /classroom/:id
+            if (n.link.indexOf("/classroom/") === 0) {
+              var cid = n.link.split("/")[2];
+              window.parent.postMessage({ type: "request_data", request: "classroom_detail", classroomId: cid }, "*");
+              window.parent.postMessage("navigate:classroom", "*");
+            } else {
+              window.parent.postMessage("navigate:home", "*");
+            }
+          }
+        });
+
+        container.appendChild(card);
+      });
+    }
+
+    window.addEventListener("message", function(e) {
+      var d = e.data;
+      if (d && d.type === "notifications") {
+        render(d.data);
+      }
+    });
+
+    // Request fresh data on load
+    window.parent.postMessage({ type: "request_data", request: "notifications" }, "*");
+  </script>
+</body>
+</html>

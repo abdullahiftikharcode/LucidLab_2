@@ -58,16 +58,19 @@
             height: 88px;
             border-radius: 20px;
             margin: 0 auto 12px;
-            display: grid;
-            place-items: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             border: 1px solid var(--line);
-            background: rgba(0, 242, 255, 0.08);
-            box-shadow: 0 0 30px rgba(0, 242, 255, 0.16);
+            background: rgba(0, 242, 255, 0.05);
+            box-shadow: 0 0 30px rgba(0, 242, 255, 0.12);
+            overflow: hidden;
         }
 
-        .logo .material-symbols-outlined {
-            font-size: 56px;
-            color: var(--primary);
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .brand h1 {
@@ -302,7 +305,7 @@
         <section class="shell">
             <div class="brand">
                 <div class="logo">
-                    <span class="material-symbols-outlined">view_in_ar</span>
+                    <img src="images/app_logo.png" alt="LucidLab Logo" />
                 </div>
                 <h1>Lucid<span>Lab</span></h1>
                 <p>Student Portal for AR Science Learning</p>
@@ -391,7 +394,11 @@
             function setLoading(isLoading) {
                 loginBtn.disabled = isLoading;
                 googleBtn.disabled = isLoading;
-                loginBtn.textContent = isLoading ? "Signing in..." : "LOG IN";
+                if (isLoading) {
+                    loginBtn.innerHTML = '<span class="material-symbols-outlined animate-spin" style="font-size: 20px;">progress_activity</span> Signing in...';
+                } else {
+                    loginBtn.textContent = "LOG IN";
+                }
             }
 
             function showError(message) {

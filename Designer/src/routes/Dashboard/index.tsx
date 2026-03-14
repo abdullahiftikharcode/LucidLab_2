@@ -236,7 +236,10 @@ export default function DashboardHome() {
             {loadingClassrooms ? (
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {[1, 2, 3].map(i => (
-                  <div key={i} className="animate-pulse rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 h-48" />
+                  <div key={i} className="relative overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 h-48 space-y-4">
+                    <div className="h-24 rounded-lg skeleton-shimmer" />
+                    <div className="h-4 w-2/3 rounded skeleton-shimmer" />
+                  </div>
                 ))}
               </div>
             ) : classrooms.length === 0 ? (
@@ -310,7 +313,15 @@ export default function DashboardHome() {
             </div>
 
             {loadingExperiments ? (
-              <div className="animate-pulse rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 h-64" />
+              <div className="relative overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 h-64 p-6 space-y-4">
+                  {[1, 2, 3, 4].map(i => (
+                    <div key={i} className="flex gap-4">
+                      <div className="h-4 w-1/3 rounded skeleton-shimmer" />
+                      <div className="h-4 w-1/4 rounded skeleton-shimmer" />
+                      <div className="h-4 w-1/6 rounded skeleton-shimmer" />
+                    </div>
+                  ))}
+              </div>
             ) : experiments.length === 0 ? (
               <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
                 <EmptyState

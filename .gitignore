@@ -61,5 +61,5 @@ cursor_project_migration_from_xr_to_ar.md
 eduxr-to-eduar-ar-migration_0f40cc7d.plan.md
 firebase-unity-sdk-13.8.0/
 EduARPlayer/Assets/Firebase/Plugins/x86_64/*.so
-
+.agent/
 LucidLab/Assets/Firebase/Plugins/x86_64/*.so

@@ -168,13 +168,21 @@ namespace LucidLab.UI
                 Debug.Log($"[App] Starting AR for: {payload}");
                 // Store experiment info so AR scene can load the right content
                 PlayerPrefs.SetString("current_experiment", payload);
-                // Parse experimentId for SceneLoader compatibility
+                // Parse experimentId for SceneLoader compatibility and SubmissionManager
                 try {
                     var json = JsonUtility.FromJson<ArPayload>(payload);
                     if (!string.IsNullOrEmpty(json.experimentId))
+                    {
                         PlayerPrefs.SetString("expname", json.experimentId);
+                        PlayerPrefs.SetString("experimentId", json.experimentId);
+                    }
+                    if (!string.IsNullOrEmpty(json.classroomId))
+                    {
+                        PlayerPrefs.SetString("classroomId", json.classroomId);
+                    }
                 } catch {
                     PlayerPrefs.SetString("expname", payload);
+                    PlayerPrefs.SetString("experimentId", payload);
                 }
                 PlayerPrefs.Save();
                 // Hide webview instead of destroying it so we can restore it later
@@ -185,6 +193,11 @@ namespace LucidLab.UI
             else if (msg == "logout")
             {
                 Debug.Log("[Auth] User logged out via Firebase");
+            }
+            else if (msg.StartsWith("set_student_id:"))
+            {
+                PlayerPrefs.SetString("studentId", msg.Substring("set_student_id:".Length));
+                PlayerPrefs.Save();
             }
             else
             {
@@ -197,6 +210,7 @@ namespace LucidLab.UI
             public string experimentId;
             public string title;
             public string mode;
+            public string classroomId;
         }
 
         private void OnDestroy()

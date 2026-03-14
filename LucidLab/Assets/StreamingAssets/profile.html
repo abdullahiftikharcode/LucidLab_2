@@ -1,192 +1,219 @@
 <!DOCTYPE html>
 
-<html class="dark" lang="en"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>LucidLab Student Profile</title>
+<html class="dark" lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>LucidLab Student Profile</title>
   <link rel="stylesheet" href="fonts/fonts.css" />
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "var(--accent, #00f2ff)",
-                        "background-light": "#f5f8f8",
-                        "background-dark": "#0f2223",
-                        "glass": "rgba(255, 255, 255, 0.05)",
-                        "glass-border": "color-mix(in srgb, var(--accent) 15%, transparent)",
-                    },
-                    fontFamily: {
-                        "display": ["Inter", "sans-serif"]
-                    },
-                    borderRadius: {
-                        "DEFAULT": "0.25rem",
-                        "lg": "0.5rem",
-                        "xl": "0.75rem",
-                        "full": "9999px"
-                    },
-                },
-            },
-        }
-    </script>
-<style>
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid color-mix(in srgb, var(--accent) 10%, transparent);
-        }
-        .neon-glow {
-            box-shadow: 0 0 15px color-mix(in srgb, var(--accent) 40%, transparent);
-        }
-    </style>
-<style>
-    :root { --accent: #00f2ff; --text-scale: 1; }
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "var(--accent, #00f2ff)",
+            "background-light": "#f5f8f8",
+            "background-dark": "#0f2223",
+            "glass": "rgba(255, 255, 255, 0.05)",
+            "glass-border": "color-mix(in srgb, var(--accent) 15%, transparent)",
+          },
+          fontFamily: {
+            "display": ["Inter", "sans-serif"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid color-mix(in srgb, var(--accent) 10%, transparent);
+    }
+
+    .neon-glow {
+      box-shadow: 0 0 15px color-mix(in srgb, var(--accent) 40%, transparent);
+    }
+  </style>
+  <style>
+    :root {
+      --accent: #00f2ff;
+      --text-scale: 1;
+    }
+
     body {
       min-height: max(884px, 100dvh);
       font-size: calc(16px * var(--text-scale));
     }
   </style>
-  </head>
-<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
-<!-- Top App Bar -->
-<header class="sticky top-0 z-50 flex items-center justify-between px-6 py-4 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-primary/10">
-<div class="w-10"></div> <!-- Spacer for centering -->
-<h1 class="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Profile</h1>
-<button id="btn-settings-gear" class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-primary/10 transition-colors">
-<span class="material-symbols-outlined text-primary" data-icon="settings">settings</span>
-</button>
-</header>
-<!-- Main Content -->
-<main class="flex-1 overflow-y-auto px-4 pb-24">
-<!-- Header / Avatar Section -->
-<section class="flex flex-col items-center mt-8 mb-10">
-<div class="relative">
-<div class="w-32 h-32 rounded-full p-1 bg-gradient-to-tr from-primary to-transparent">
-<div id="avatar-circle" class="w-full h-full rounded-full border-4 border-background-dark bg-primary/20 flex items-center justify-center">
-<span id="avatar-initials" class="text-primary text-4xl font-bold"></span>
-</div>
-</div>
-</div>
-<h2 id="profile-name" class="mt-4 text-2xl font-bold text-slate-900 dark:text-slate-100">Loading…</h2>
-<p id="profile-email" class="text-slate-500 dark:text-primary/70 text-sm font-medium"></p>
+</head>
+
+<body
+  class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
+  <!-- Top App Bar -->
+  <header
+    class="sticky top-0 z-50 flex items-center justify-between px-6 py-4 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-primary/10">
+    <div class="w-10"></div> <!-- Spacer for centering -->
+    <h1 class="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Profile</h1>
+    <button id="btn-settings-gear"
+      class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-primary/10 transition-colors">
+      <span class="material-symbols-outlined text-primary" data-icon="settings">settings</span>
+    </button>
+  </header>
+  <!-- Main Content -->
+  <main class="flex-1 overflow-y-auto px-4 pb-24">
+    <!-- Header / Avatar Section -->
+    <section class="flex flex-col items-center mt-8 mb-10">
+      <div class="relative">
+        <div class="w-32 h-32 rounded-full p-1 bg-gradient-to-tr from-primary to-transparent">
+          <div id="avatar-circle"
+            class="w-full h-full rounded-full border-4 border-background-dark bg-primary/20 flex items-center justify-center">
+            <span id="avatar-initials" class="text-primary text-4xl font-bold"></span>
+          </div>
+        </div>
+      </div>
+      <h2 id="profile-name" class="mt-4 text-2xl font-bold text-slate-900 dark:text-slate-100 flex justify-center">
+    <span class="skeleton h-8 w-40"></span>
+</h2>
+<p id="profile-email" class="text-slate-500 dark:text-primary/70 text-sm font-medium mt-2 flex justify-center">
+    <span class="skeleton h-4 w-60"></span>
+</p>
 </section>
 <!-- Stats Row -->
 <section class="grid grid-cols-3 gap-3 mb-10">
 <div class="glass-panel rounded-xl p-3 flex flex-col items-center justify-center text-center">
 <span class="text-primary text-xs font-semibold uppercase tracking-wider mb-1">Joined</span>
-<span id="stat-classes" class="text-xl font-bold">0</span>
+<span id="stat-classes" class="text-xl font-bold flex justify-center mt-1"><span class="skeleton h-6 w-8"></span></span>
 <span class="text-[10px] text-slate-500">Classes</span>
 </div>
 <div class="glass-panel rounded-xl p-3 flex flex-col items-center justify-center text-center">
 <span class="text-primary text-xs font-semibold uppercase tracking-wider mb-1">Done</span>
-<span id="stat-completed" class="text-xl font-bold">0</span>
+<span id="stat-completed" class="text-xl font-bold flex justify-center mt-1"><span class="skeleton h-6 w-8"></span></span>
 <span class="text-[10px] text-slate-500">Experiments</span>
 </div>
 <div class="glass-panel rounded-xl p-3 flex flex-col items-center justify-center text-center border-primary/30">
 <span class="text-primary text-xs font-semibold uppercase tracking-wider mb-1">Score</span>
-<span id="stat-score" class="text-xl font-bold">0%</span>
+<span id="stat-score" class="text-xl font-bold flex justify-center mt-1"><span class="skeleton h-6 w-12"></span></span>
 <span class="text-[10px] text-slate-500">Average</span>
 </div>
-</section>
-<!-- Options List -->
-<section class="space-y-3 mb-8">
-<button id="btn-account" class="w-full glass-panel flex items-center justify-between p-4 rounded-xl hover:bg-primary/5 transition-all group">
-<div class="flex items-center gap-4">
-<div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-<span class="material-symbols-outlined">person</span>
-</div>
-<span class="font-medium">Account Settings</span>
-</div>
-<span class="material-symbols-outlined text-slate-500 group-hover:translate-x-1 transition-transform">chevron_right</span>
-</button>
-<button id="btn-appearance" class="w-full glass-panel flex items-center justify-between p-4 rounded-xl hover:bg-primary/5 transition-all group">
-<div class="flex items-center gap-4">
-<div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-<span class="material-symbols-outlined">dark_mode</span>
-</div>
-<span class="font-medium">Appearance</span>
-</div>
-<span class="material-symbols-outlined text-slate-500 group-hover:translate-x-1 transition-transform">chevron_right</span>
-</button>
-<button id="btn-help" class="w-full glass-panel flex items-center justify-between p-4 rounded-xl hover:bg-primary/5 transition-all group">
-<div class="flex items-center gap-4">
-<div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-<span class="material-symbols-outlined">help</span>
-</div>
-<span class="font-medium">Help &amp; Support</span>
-</div>
-<span class="material-symbols-outlined text-slate-500 group-hover:translate-x-1 transition-transform">chevron_right</span>
-</button>
-<button id="btn-privacy" class="w-full glass-panel flex items-center justify-between p-4 rounded-xl hover:bg-primary/5 transition-all group">
-<div class="flex items-center gap-4">
-<div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-<span class="material-symbols-outlined">shield</span>
-</div>
-<span class="font-medium">Privacy Policy</span>
-</div>
-<span class="material-symbols-outlined text-slate-500 group-hover:translate-x-1 transition-transform">chevron_right</span>
-</button>
-</section>
-<!-- Log Out Button -->
-<button id="logout-btn" class="w-full py-4 border border-rose-500/30 text-rose-500 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-rose-500/10 transition-colors">
-<span class="material-symbols-outlined">logout</span>
-            Log Out
-        </button>
-</main>
-<script>
-(function () {
-  var nav = document.querySelector("nav");
-  if (nav) nav.style.display = "none";
-  var main = document.querySelector("main");
-  if (main) main.style.paddingBottom = "16px";
+    </section>
+    <!-- Options List -->
+    <section class="space-y-3 mb-8">
+      <button id="btn-account"
+        class="w-full glass-panel flex items-center justify-between p-4 rounded-xl hover:bg-primary/5 transition-all group">
+        <div class="flex items-center gap-4">
+          <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+            <span class="material-symbols-outlined">person</span>
+          </div>
+          <span class="font-medium">Account Settings</span>
+        </div>
+        <span
+          class="material-symbols-outlined text-slate-500 group-hover:translate-x-1 transition-transform">chevron_right</span>
+      </button>
+      <button id="btn-appearance"
+        class="w-full glass-panel flex items-center justify-between p-4 rounded-xl hover:bg-primary/5 transition-all group">
+        <div class="flex items-center gap-4">
+          <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+            <span class="material-symbols-outlined">dark_mode</span>
+          </div>
+          <span class="font-medium">Appearance</span>
+        </div>
+        <span
+          class="material-symbols-outlined text-slate-500 group-hover:translate-x-1 transition-transform">chevron_right</span>
+      </button>
+      <button id="btn-help"
+        class="w-full glass-panel flex items-center justify-between p-4 rounded-xl hover:bg-primary/5 transition-all group">
+        <div class="flex items-center gap-4">
+          <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+            <span class="material-symbols-outlined">help</span>
+          </div>
+          <span class="font-medium">Help &amp; Support</span>
+        </div>
+        <span
+          class="material-symbols-outlined text-slate-500 group-hover:translate-x-1 transition-transform">chevron_right</span>
+      </button>
+      <button id="btn-privacy"
+        class="w-full glass-panel flex items-center justify-between p-4 rounded-xl hover:bg-primary/5 transition-all group">
+        <div class="flex items-center gap-4">
+          <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+            <span class="material-symbols-outlined">shield</span>
+          </div>
+          <span class="font-medium">Privacy Policy</span>
+        </div>
+        <span
+          class="material-symbols-outlined text-slate-500 group-hover:translate-x-1 transition-transform">chevron_right</span>
+      </button>
+    </section>
+    <!-- Log Out Button -->
+    <button id="logout-btn"
+      class="w-full py-4 border border-rose-500/30 text-rose-500 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-rose-500/10 transition-colors">
+      <span class="material-symbols-outlined">logout</span>
+      Log Out
+    </button>
+  </main>
+  <script>
+      (function () {
+        var nav = document.querySelector("nav");
+        if (nav) nav.style.display = "none";
+        var main = document.querySelector("main");
+        if (main) main.style.paddingBottom = "16px";
 
-  // Logout → send auth logout to shell
-  document.getElementById("logout-btn").addEventListener("click", function (e) {
-    e.preventDefault(); e.stopPropagation();
-    parent.postMessage({ type: "auth", action: "logout" }, "*");
-  });
+        // Logout → send auth logout to shell
+        document.getElementById("logout-btn").addEventListener("click", function (e) {
+          e.preventDefault(); e.stopPropagation();
+          parent.postMessage({ type: "auth", action: "logout" }, "*");
+        });
 
-  // Gear icon in header → App Settings
-  document.getElementById("btn-settings-gear").addEventListener("click", function () {
-    parent.postMessage("navigate:app_settings", "*");
-  });
+        // Gear icon in header → App Settings
+        document.getElementById("btn-settings-gear").addEventListener("click", function () {
+          parent.postMessage("navigate:app_settings", "*");
+        });
 
-  // Settings navigation
-  document.getElementById("btn-account").addEventListener("click", function () {
-    parent.postMessage("navigate:account_settings", "*");
-  });
-  document.getElementById("btn-appearance").addEventListener("click", function () {
-    parent.postMessage("navigate:appearance", "*");
-  });
-  document.getElementById("btn-help").addEventListener("click", function () {
-    parent.postMessage("navigate:help", "*");
-  });
-  document.getElementById("btn-privacy").addEventListener("click", function () {
-    parent.postMessage("navigate:privacy", "*");
-  });
+        // Settings navigation
+        document.getElementById("btn-account").addEventListener("click", function () {
+          parent.postMessage("navigate:account_settings", "*");
+        });
+        document.getElementById("btn-appearance").addEventListener("click", function () {
+          parent.postMessage("navigate:appearance", "*");
+        });
+        document.getElementById("btn-help").addEventListener("click", function () {
+          parent.postMessage("navigate:help", "*");
+        });
+        document.getElementById("btn-privacy").addEventListener("click", function () {
+          parent.postMessage("navigate:privacy", "*");
+        });
 
-  function initials(name) {
-    if (!name) return "?";
-    return name.split(" ").map(function(w){return w[0]||""}).join("").substring(0,2).toUpperCase();
-  }
+        function initials(name) {
+          if (!name) return "?";
+          return name.split(" ").map(function (w) { return w[0] || "" }).join("").substring(0, 2).toUpperCase();
+        }
 
-  function renderProfile(user, stats) {
-    document.getElementById("avatar-initials").textContent = initials(user.displayName);
-    document.getElementById("profile-name").textContent = user.displayName || "Student";
-    document.getElementById("profile-email").textContent = user.email || "";
-    document.getElementById("stat-classes").textContent = (stats && stats.classrooms) || 0;
-    document.getElementById("stat-completed").textContent = (stats && stats.completed) || 0;
-    document.getElementById("stat-score").textContent = ((stats && stats.avgScore) || 0) + "%";
-  }
+        function renderProfile(user, stats) {
+          document.getElementById("avatar-initials").textContent = initials(user.displayName);
+          document.getElementById("profile-name").textContent = user.displayName || "Student";
+          document.getElementById("profile-email").textContent = user.email || "";
+          document.getElementById("stat-classes").textContent = (stats && stats.classrooms) || 0;
+          document.getElementById("stat-completed").textContent = (stats && stats.completed) || 0;
+          document.getElementById("stat-score").textContent = ((stats && stats.avgScore) || 0) + "%";
+        }
 
-  window.addEventListener("message", function (e) {
-    var d = e.data;
-    if (d && typeof d === "object" && d.type === "profile_data") renderProfile(d.user || {}, d.stats || {});
-  });
-})();
-</script>
-<script src="preferences.js"></script>
-</body></html>
+        window.addEventListener("message", function (e) {
+          var d = e.data;
+          if (d && typeof d === "object" && d.type === "profile_data") renderProfile(d.user || {}, d.stats || {});
+        });
+      })();
+  </script>
+  <script src="preferences.js"></script>
+</body>
+
+</html>

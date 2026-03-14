@@ -187,7 +187,7 @@ export async function importIntoEditor(
       case 'ApplyForceOnObject':
         actualNode = new ApplyForceOnObjectNode();
         break;
-      case 'GetTimeSinceLastLoopNode':
+      case 'GetTimeSinceLastLoop':
         actualNode = new GetTimeSinceLastLoopNode();
         break;
       case 'GetSpeed':

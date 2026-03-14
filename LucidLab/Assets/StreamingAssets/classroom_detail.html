@@ -287,6 +287,25 @@
             background: linear-gradient(90deg, var(--accent), #6366f1);
             transition: width 0.6s ease;
         }
+
+        /* Skeleton Shimmer */
+        .skeleton {
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 6px;
+          position: relative;
+          overflow: hidden;
+        }
+        .skeleton::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+          animation: shimmer 2s infinite;
+          transform: translateX(-100%);
+        }
+        @keyframes shimmer {
+          100% { transform: translateX(100%); }
+        }
     </style>
     <style>
         body {
@@ -364,14 +383,30 @@
                 </div>
             </div>
         </div>
-        <!-- Section Title -->
-        <div class="px-4 mb-4 flex items-center justify-between">
-            <h3 class="text-lg font-bold flex items-center gap-2">
-                Assigned Experiments
-                <span id="exp-count" class="bg-primary/20 text-primary text-xs font-bold px-2 py-0.5 rounded-full border border-primary/30">0</span>
-            </h3>
+        <div id="experiments-list" class="flex flex-col gap-4 px-4">
+            <!-- Loading Skeletons -->
+            <div id="skeleton-container" class="space-y-4">
+                <div class="glass-card rounded-xl p-4 border-l-4 border-l-slate-800">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex-1">
+                            <div class="skeleton h-3 w-20 mb-2"></div>
+                            <div class="skeleton h-4 w-3/4"></div>
+                        </div>
+                        <div class="skeleton h-5 w-16"></div>
+                    </div>
+                    <div class="skeleton h-10 w-full"></div>
+                </div>
+                <div class="glass-card rounded-xl p-4 border-l-4 border-l-slate-800">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex-1">
+                            <div class="skeleton h-3 w-16 mb-2"></div>
+                            <div class="skeleton h-4 w-1/2"></div>
+                        </div>
+                    </div>
+                    <div class="skeleton h-10 w-full"></div>
+                </div>
+            </div>
         </div>
-        <div id="experiments-list" class="flex flex-col gap-4 px-4"></div>
         <div id="empty-state" class="hidden flex flex-col items-center justify-center py-16 text-center px-4">
             <span class="material-symbols-outlined text-5xl text-slate-600 mb-3">science</span>
             <p class="text-slate-400 text-sm">No experiments assigned yet.</p>
@@ -480,13 +515,15 @@
         var statusBadge = document.getElementById("detail-status-badge");
         var status, sBg, sText;
         if (sub && (sub.status === "graded" || sub.status === "correct")) {
-          status = "Completed"; sBg = "bg-emerald-400/10"; sText = "text-emerald-500 border-emerald-500/20";
+          status = "Graded"; sBg = "bg-emerald-400/10"; sText = "text-emerald-500 border-emerald-500/20";
+        } else if (sub && sub.status === "submitted") {
+          status = "Submitted"; sBg = "bg-cyan-400/10"; sText = "text-cyan-400 border-cyan-400/20";
         } else if (sub && sub.status === "incorrect") {
           status = "Incorrect"; sBg = "bg-rose-400/10"; sText = "text-rose-400 border-rose-400/20";
         } else if (sub && sub.status === "needs_revision") {
           status = "Needs Revision"; sBg = "bg-amber-400/10"; sText = "text-amber-400 border-amber-400/20";
-        } else if (sub && (sub.status === "in_progress" || sub.status === "submitted")) {
-          status = sub.status === "submitted" ? "Submitted" : "In Progress"; sBg = "bg-yellow-400/10"; sText = "text-yellow-400 border-yellow-400/20";
+        } else if (sub && sub.status === "in_progress") {
+          status = "In Progress"; sBg = "bg-yellow-400/10"; sText = "text-yellow-400 border-yellow-400/20";
         } else {
           status = "Not Started"; sBg = "bg-slate-500/10"; sText = "text-slate-400 border-slate-600";
         }
@@ -496,8 +533,13 @@
         // Date
         var dateEl = document.getElementById("detail-date");
         if (sub && sub.submittedAt) {
-          var d = sub.submittedAt.toDate ? sub.submittedAt.toDate() : new Date(sub.submittedAt);
-          dateEl.textContent = "Submitted " + d.toLocaleDateString();
+          var d = sub.submittedAt.toDate ? sub.submittedAt.toDate() : 
+                  (sub.submittedAt.seconds ? new Date(sub.submittedAt.seconds * 1000) : new Date(sub.submittedAt));
+          if (isNaN(d.getTime())) {
+            dateEl.textContent = "Submitted";
+          } else {
+            dateEl.textContent = "Submitted " + d.toLocaleDateString();
+          }
         } else { dateEl.textContent = ""; }
 
         // Stats grid
@@ -572,10 +614,12 @@
         var arLabel = document.getElementById("detail-ar-label");
         if (sub && (sub.status === "graded" || sub.status === "correct")) {
           arLabel.textContent = "Review Session";
-        } else if (sub && (sub.status === "in_progress" || sub.status === "submitted")) {
-          arLabel.textContent = "Continue AR";
+        } else if (sub && sub.status === "submitted") {
+          arLabel.textContent = "View Submission";
         } else if (sub && sub.status === "needs_revision") {
           arLabel.textContent = "Retake Experiment";
+        } else if (sub && sub.status === "in_progress") {
+          arLabel.textContent = "Continue AR";
         } else {
           arLabel.textContent = "Launch AR";
         }
@@ -601,8 +645,19 @@
         var sub = currentDetailExp.submission;
         var mode = "launch";
         if (sub && (sub.status === "graded" || sub.status === "correct")) mode = "review";
-        else if (sub && (sub.status === "in_progress" || sub.status === "submitted")) mode = "continue";
-        parent.postMessage("unity:start_ar:" + JSON.stringify({ experimentId: currentDetailExp.id, title: currentDetailExp.title || currentDetailExp.name, mode: mode }), "*");
+        else if (sub && sub.status === "submitted") mode = "view";
+        else if (sub && sub.status === "in_progress") mode = "continue";
+        
+        // Show loading state on button
+        this.disabled = true;
+        this.innerHTML = '<span class="material-symbols-outlined text-lg animate-spin">progress_activity</span> Launching AR...';
+        
+        parent.postMessage("unity:start_ar:" + JSON.stringify({ 
+          experimentId: currentDetailExp.id, 
+          title: currentDetailExp.title || currentDetailExp.name, 
+          mode: mode,
+          classroomId: currentClassroomId 
+        }), "*");
       });
 
       // Leave classroom via menu
@@ -709,8 +764,10 @@
         document.getElementById("exp-count").textContent = experiments.length;
 
         var list = document.getElementById("experiments-list");
+        var skeletons = document.getElementById("skeleton-container");
+        if (skeletons) skeletons.remove();
+        
         var empty = document.getElementById("empty-state");
-        list.innerHTML = "";
 
         if (experiments.length === 0) {
           empty.classList.remove("hidden");
@@ -723,12 +780,19 @@
           var status, borderColor, statusBg, statusText, btnClass, btnLabel;
 
           if (sub && (sub.status === "graded" || sub.status === "correct")) {
-            status = "Completed";
+            // Show grade text if available, otherwise "Graded"
+            status = sub.grade ? sub.grade : "Graded";
             borderColor = "border-l-emerald-400";
             statusBg = "bg-emerald-400/10"; statusText = "text-emerald-500";
             btnClass = "w-full bg-primary/20 border border-primary/40 text-primary font-bold py-2.5 rounded-lg flex items-center justify-center gap-2 hover:bg-primary/30 transition-all";
             btnLabel = "Review Session";
-          } else if (sub && (sub.status === "in_progress" || sub.status === "submitted")) {
+          } else if (sub && sub.status === "submitted") {
+            status = "Submitted";
+            borderColor = "border-l-cyan-400";
+            statusBg = "bg-cyan-400/10"; statusText = "text-cyan-400";
+            btnClass = "w-full bg-primary/20 border border-primary/40 text-primary font-bold py-2.5 rounded-lg flex items-center justify-center gap-2 hover:bg-primary/30 transition-all";
+            btnLabel = "View Submission";
+          } else if (sub && (sub.status === "in_progress")) {
             status = "In Progress";
             borderColor = "border-l-yellow-400";
             statusBg = "bg-yellow-400/10"; statusText = "text-yellow-500";
@@ -769,13 +833,21 @@
           })(exp, classroom);
 
           // AR button keeps direct launch
-          card.querySelector(".ar-btn").addEventListener("click", function (e) {
-            e.stopPropagation();
-            var mode = "launch";
-            if (sub && (sub.status === "graded" || sub.status === "correct")) mode = "review";
-            else if (sub && (sub.status === "in_progress" || sub.status === "submitted")) mode = "continue";
-            parent.postMessage("unity:start_ar:" + JSON.stringify({ experimentId: exp.id, title: exp.title || exp.name, mode: mode }), "*");
-          });
+          (function(capturedSub) {
+            card.querySelector(".ar-btn").addEventListener("click", function (e) {
+              e.stopPropagation();
+              var mode = "launch";
+              if (capturedSub && (capturedSub.status === "graded" || capturedSub.status === "correct")) mode = "review";
+              else if (capturedSub && capturedSub.status === "submitted") mode = "view";
+              else if (capturedSub && capturedSub.status === "in_progress") mode = "continue";
+              parent.postMessage("unity:start_ar:" + JSON.stringify({ 
+                experimentId: exp.id, 
+                title: exp.title || exp.name, 
+                mode: mode,
+                classroomId: currentClassroomId 
+              }), "*");
+            });
+          })(sub);
           list.appendChild(card);
         });
       }
@@ -784,6 +856,10 @@
         var d = e.data;
         if (d && typeof d === "object" && d.type === "classroom_detail") {
           renderDetail(d.classroom, d.experiments || []);
+          if (d.selectedExperimentId) {
+            var ex = (d.experiments || []).find(function(x) { return x.id === d.selectedExperimentId; });
+            if (ex) openExpDetail(ex, d.classroom);
+          }
         }
       });
     })();

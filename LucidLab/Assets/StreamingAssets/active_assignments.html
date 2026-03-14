@@ -28,18 +28,17 @@
     </script>
     <style>
         :root { --accent: #00f2ff; --text-scale: 1; }
-        .glass-card {
+        .glass-panel {
             background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 252, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
-
-        .neon-glow {
-            box-shadow: 0 0 15px color-mix(in srgb, var(--accent) 40%, transparent);
+        .neon-glow-primary {
+            box-shadow: 0 0 15px color-mix(in srgb, var(--accent) 30%, transparent);
         }
-
-        .neon-text-glow {
-            text-shadow: 0 0 8px color-mix(in srgb, var(--accent) 50%, transparent);
+        body { font-size: calc(16px * var(--text-scale)); }
+        .neon-glow-success {
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
         }
 
         /* Experiment detail screen */
@@ -103,8 +102,26 @@
             transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
         }
         .detail-launch-bar.open { transform: translateX(0); }
-        .progress-track { width: 100%; height: 6px; background: rgba(255,255,255,0.08); border-radius: 999px; overflow: hidden; margin-top: 6px; }
         .progress-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--accent), #6366f1); transition: width 0.6s ease; }
+
+        /* Skeleton Shimmer */
+        .skeleton {
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 6px;
+          position: relative;
+          overflow: hidden;
+        }
+        .skeleton::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+          animation: shimmer 2s infinite;
+          transform: translateX(-100%);
+        }
+        @keyframes shimmer {
+          100% { transform: translateX(100%); }
+        }
     </style>
     <style>
         body {
@@ -116,36 +133,59 @@
 
 <body
     class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
-    <!-- Top App Bar -->
-    <header
-        class="sticky top-0 z-10 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md px-4 py-4 border-b border-primary/10">
-        <div class="flex items-center justify-between">
-            <div class="w-10"></div> <!-- Spacer -->
-            <h1 class="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">My Experiments</h1>
-            <button
-                class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-primary/10 transition-colors">
-                <span class="material-symbols-outlined text-slate-900 dark:text-slate-100">filter_list</span>
+    <header class="sticky top-0 z-50 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
+        <div class="flex items-center justify-between p-4 h-16">
+            <button id="header-back" class="flex items-center justify-center size-10 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
+                <span class="material-symbols-outlined text-slate-600 dark:text-slate-400">arrow_back</span>
+            </button>
+            <h1 class="text-lg font-bold tracking-tight text-slate-900 dark:text-white">My Experiments</h1>
+            <button class="flex items-center justify-center size-10 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
+                <span class="material-symbols-outlined text-primary">filter_list</span>
             </button>
         </div>
     </header>
-    <!-- Tabs / Segmented Control -->
-    <div class="px-4 mt-6">
+    <!-- Segmented Control / Tabs -->
+    <div class="px-4 mt-4 mb-6">
         <div class="flex p-1 bg-slate-200/50 dark:bg-slate-800/50 rounded-xl">
-            <button
-                class="flex-1 py-2 text-sm font-semibold rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm ring-1 ring-black/5">
+            <button class="flex-1 py-2 text-sm font-semibold rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm ring-1 ring-black/5">
                 To Do
             </button>
-            <button
-                class="flex-1 py-2 text-sm font-semibold rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-all">
+            <button id="tab-completed" class="flex-1 py-2 text-sm font-semibold rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-all">
                 Completed
             </button>
         </div>
     </div>
-    <!-- Main Content: Task List -->
-    <main class="flex-1 px-4 py-6 space-y-4 overflow-y-auto">
-        <div id="assignments-list"></div>
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-y-auto px-4 pb-24">
+        <!-- Section Title -->
+        <div id="assignments-list" class="space-y-4">
+            <!-- Loading Skeletons -->
+            <div id="skeleton-container" class="space-y-4">
+                <div class="glass-panel p-4 rounded-xl flex flex-col gap-4">
+                    <div class="flex items-center gap-4">
+                        <div class="skeleton size-16 rounded-lg"></div>
+                        <div class="flex-1 space-y-2">
+                            <div class="skeleton h-2 w-16"></div>
+                            <div class="skeleton h-4 w-3/4"></div>
+                            <div class="skeleton h-3 w-20"></div>
+                        </div>
+                    </div>
+                    <div class="skeleton h-10 w-full"></div>
+                </div>
+                <div class="glass-panel p-4 rounded-xl flex flex-col gap-4 opacity-60">
+                    <div class="flex items-center gap-4">
+                        <div class="skeleton size-16 rounded-lg"></div>
+                        <div class="flex-1 space-y-2">
+                            <div class="skeleton h-2 w-12"></div>
+                            <div class="skeleton h-4 w-1/2"></div>
+                        </div>
+                    </div>
+                    <div class="skeleton h-10 w-full"></div>
+                </div>
+            </div>
+        </div>
         <div id="empty-state" class="hidden flex flex-col items-center justify-center py-16 text-center">
-            <span class="material-symbols-outlined text-5xl text-slate-600 mb-3">check_circle</span>
+            <span class="material-symbols-outlined text-5xl text-slate-600 mb-3">emoji_events</span>
             <p class="text-slate-400 text-sm">No active assignments.<br>You’re all caught up!</p>
         </div>
     </main>
@@ -198,16 +238,23 @@
       var main = document.querySelector("main");
       if (main) main.style.paddingBottom = "16px";
 
-      // "Completed" tab → navigate to completed screen
-      var tabs = document.querySelectorAll("button");
-      tabs.forEach(function (btn) {
-        if (btn.textContent.trim() === "Completed") {
-          btn.addEventListener("click", function (e) {
-            e.preventDefault(); e.stopPropagation();
-            parent.postMessage("navigate:completed", "*");
-          });
-        }
-      });
+      // "Completed" tab
+      var completedBtn = document.getElementById("tab-completed");
+      if (completedBtn) {
+        completedBtn.addEventListener("click", function (e) {
+          e.preventDefault(); e.stopPropagation();
+          parent.postMessage("navigate:completed", "*");
+        });
+      }
+ 
+      // Back button
+      var backBtn = document.getElementById("header-back");
+      if (backBtn) {
+        backBtn.addEventListener("click", function (e) {
+          e.preventDefault(); e.stopPropagation();
+          parent.postMessage("navigate:home", "*");
+        });
+      }
 
       function esc(s) {
         var d = document.createElement("div");
@@ -231,9 +278,12 @@
         // Status badge
         var statusBadge = document.getElementById("detail-status-badge");
         var status, sBg, sText;
-        if (sub && (sub.status === "in_progress" || sub.status === "submitted")) {
-          status = sub.status === "submitted" ? "Submitted" : "In Progress";
-          sBg = "bg-yellow-400/10"; sText = "text-yellow-400 border-yellow-400/20";
+        if (sub && (sub.status === "graded" || sub.status === "correct")) {
+          status = "Graded"; sBg = "bg-emerald-400/10"; sText = "text-emerald-500 border-emerald-500/20";
+        } else if (sub && sub.status === "submitted") {
+          status = "Submitted"; sBg = "bg-cyan-400/10"; sText = "text-cyan-400 border-cyan-400/20";
+        } else if (sub && sub.status === "in_progress") {
+          status = "In Progress"; sBg = "bg-yellow-400/10"; sText = "text-yellow-400 border-yellow-400/20";
         } else {
           status = "Not Started"; sBg = "bg-slate-500/10"; sText = "text-slate-400 border-slate-600";
         }
@@ -243,8 +293,13 @@
         // Date
         var dateEl = document.getElementById("detail-date");
         if (sub && sub.submittedAt) {
-          var d2 = sub.submittedAt.toDate ? sub.submittedAt.toDate() : new Date(sub.submittedAt);
-          dateEl.textContent = "Submitted " + d2.toLocaleDateString();
+          var d2 = sub.submittedAt.toDate ? sub.submittedAt.toDate() : 
+                   (sub.submittedAt.seconds ? new Date(sub.submittedAt.seconds * 1000) : new Date(sub.submittedAt));
+          if (isNaN(d2.getTime())) {
+            dateEl.textContent = "Submitted";
+          } else {
+            dateEl.textContent = "Submitted " + d2.toLocaleDateString();
+          }
         } else { dateEl.textContent = ""; }
 
         // Stats grid
@@ -301,7 +356,11 @@
 
         // AR button label
         var arLabel = document.getElementById("detail-ar-label");
-        if (sub && (sub.status === "in_progress" || sub.status === "submitted")) {
+        if (sub && (sub.status === "graded" || sub.status === "correct")) {
+          arLabel.textContent = "Review Session";
+        } else if (sub && sub.status === "submitted") {
+          arLabel.textContent = "View Submission";
+        } else if (sub && sub.status === "in_progress") {
           arLabel.textContent = "Continue AR";
         } else {
           arLabel.textContent = "Launch AR";
@@ -327,42 +386,92 @@
         if (!currentDetailExp) return;
         var sub = currentDetailExp.submission;
         var mode = "launch";
-        if (sub && (sub.status === "in_progress" || sub.status === "submitted")) mode = "continue";
-        parent.postMessage("unity:start_ar:" + JSON.stringify({ experimentId: currentDetailExp.id, title: currentDetailExp.title || currentDetailExp.name, mode: mode }), "*");
+        if (sub && (sub.status === "graded" || sub.status === "correct")) mode = "review";
+        else if (sub && sub.status === "submitted") mode = "view";
+        else if (sub && sub.status === "in_progress") mode = "continue";
+        
+        // Show loading state on button
+        this.disabled = true;
+        this.innerHTML = '<span class="material-symbols-outlined text-lg animate-spin">progress_activity</span> Launching AR...';
+        
+        parent.postMessage("unity:start_ar:" + JSON.stringify({ 
+          experimentId: currentDetailExp.id, 
+          title: currentDetailExp.title || currentDetailExp.name, 
+          mode: mode,
+          classroomId: currentDetailExp.classroomId
+        }), "*");
       });
 
       function renderAssignments(experiments) {
         var list = document.getElementById("assignments-list");
-        var empty = document.getElementById("empty-state");
-        list.innerHTML = "";
+        var skeletons = document.getElementById("skeleton-container");
+        if (skeletons) skeletons.remove();
+
+        var countEl = document.getElementById("total-count");
 
         if (!experiments || experiments.length === 0) {
+          countEl.textContent = "0 Total";
           empty.classList.remove("hidden");
           return;
         }
         empty.classList.add("hidden");
+        countEl.textContent = experiments.length + " Total";
 
         experiments.forEach(function (exp) {
-          var hasSubmission = exp.submission && (exp.submission.status === "in_progress" || exp.submission.status === "submitted");
-          var statusLabel = hasSubmission ? "In Progress" : "Not Started";
-          var statusColor = hasSubmission ? "text-amber-400 bg-amber-400/10" : "text-slate-400 bg-slate-500/10";
-          var borderColor = hasSubmission ? "border-l-yellow-400" : "border-l-slate-500";
-          var pct = (exp.submission && exp.submission.completionPercentage) || 0;
-          var classroomName = (exp.classroom && exp.classroom.name) || "";
-          var btnLabel = hasSubmission ? "Continue AR" : "Launch AR";
+          var sub = exp.submission;
+          var isGraded    = sub && (sub.status === "graded" || sub.status === "correct");
+          var isSubmitted = sub && sub.status === "submitted";
+          var isInProg    = sub && sub.status === "in_progress";
+
+          var statusIcon, statusColor, statusLabel, btnLabel;
+          if (isGraded) {
+             statusIcon  = "workspace_premium";
+             statusLabel = "Graded";
+             statusColor = "text-accent-success";
+             btnLabel    = "Review Session";
+          } else if (isSubmitted) {
+             statusIcon  = "schedule_send";
+             statusLabel = "Submitted";
+             statusColor = "text-cyan-400";
+             btnLabel    = "View Submission";
+          } else if (isInProg) {
+             statusIcon  = "trending_up";
+             statusLabel = "In Progress";
+             statusColor = "text-amber-400";
+             btnLabel    = "Continue AR";
+          } else {
+             statusIcon  = "play_circle";
+             statusLabel = "Not Started";
+             statusColor = "text-slate-400";
+             btnLabel    = "Launch AR";
+          }
+
+          var pct = (sub && sub.completionPercentage) || 0;
+          // Submissions might not have classroomName if fetched directly, but exp has it
+          var classroomName = (exp.classroom && exp.classroom.name) || (sub && sub.classroomName) || "";
 
           var card = document.createElement("div");
-          card.className = "glass-card rounded-xl p-4 border-l-4 cursor-pointer active:scale-[0.98] transition-transform mb-4 " + borderColor;
+          card.className = "glass-panel p-4 rounded-xl flex flex-col gap-4 transition-transform active:scale-[0.98] mb-4";
           card.innerHTML =
-            '<div class="flex justify-between items-start mb-1">' +
-              '<div class="min-w-0 flex-1 mr-2">' +
-                '<span class="text-[10px] font-bold text-primary uppercase tracking-widest">' + esc(classroomName) + '</span>' +
-                '<h3 class="text-base font-bold leading-tight truncate">' + esc(exp.title || exp.name || "Experiment") + '</h3>' +
+            '<div class="flex items-center gap-4">' +
+              '<div class="shrink-0">' +
+                '<div class="size-16 rounded-lg bg-gradient-to-br from-primary/20 to-blue-600/20 flex items-center justify-center border border-primary/30">' +
+                  '<span class="material-symbols-outlined text-3xl ' + statusColor + '">' + statusIcon + '</span>' +
+                '</div>' +
               '</div>' +
-              '<span class="px-2 py-1 rounded-lg shrink-0 ' + statusColor + ' text-[10px] font-bold border border-current/20">' + statusLabel + '</span>' +
+              '<div class="flex-1 min-w-0">' +
+                '<span class="text-[10px] font-bold text-primary uppercase tracking-widest">' + esc(classroomName) + '</span>' +
+                '<h3 class="text-base font-bold text-white leading-tight truncate">' + esc(exp.title || exp.name || "Experiment") + '</h3>' +
+                '<div class="flex items-center mt-1 gap-1.5">' +
+                  '<span class="text-xs font-bold ' + statusColor + ' uppercase tracking-wider">' + statusLabel + '</span>' +
+                '</div>' +
+              '</div>' +
+              '<div class="shrink-0">' +
+                '<span class="material-symbols-outlined text-slate-600">chevron_right</span>' +
+              '</div>' +
             '</div>' +
-            (pct > 0 ? '<div class="progress-track mb-3"><div class="progress-fill" style="width:' + pct + '%"></div></div>' : '<div class="mb-3"></div>') +
-            '<button class="ar-btn w-full bg-primary hover:bg-primary/90 text-background-dark font-bold py-2.5 rounded-lg flex items-center justify-center gap-2 transition-all active:scale-[0.98]">' +
+            (pct > 0 ? '<div class="progress-track"><div class="progress-fill" style="width:' + pct + '%"></div></div>' : '') +
+            '<button class="ar-btn w-full bg-primary hover:bg-primary/90 text-background-dark font-bold py-2.5 rounded-lg flex items-center justify-center gap-2 transition-all active:scale-95 text-sm">' +
               '<span class="material-symbols-outlined text-lg">play_arrow</span> ' + btnLabel +
             '</button>';
 
@@ -374,11 +483,21 @@
           })(exp);
 
           // AR button keeps direct launch
-          card.querySelector(".ar-btn").addEventListener("click", function (e) {
-            e.stopPropagation();
-            var mode = hasSubmission ? "continue" : "launch";
-            parent.postMessage("unity:start_ar:" + JSON.stringify({ experimentId: exp.id, title: exp.title || exp.name, mode: mode }), "*");
-          });
+          (function(capturedSub) {
+            card.querySelector(".ar-btn").addEventListener("click", function (e) {
+              e.stopPropagation();
+              var mode = "launch";
+              if (capturedSub && (capturedSub.status === "graded" || capturedSub.status === "correct")) mode = "review";
+              else if (capturedSub && capturedSub.status === "submitted") mode = "view";
+              else if (capturedSub && capturedSub.status === "in_progress") mode = "continue";
+              parent.postMessage("unity:start_ar:" + JSON.stringify({ 
+                experimentId: exp.id, 
+                title: exp.title || exp.name, 
+                mode: mode,
+                classroomId: exp.classroomId 
+              }), "*");
+            });
+          })(sub);
           list.appendChild(card);
         });
       }

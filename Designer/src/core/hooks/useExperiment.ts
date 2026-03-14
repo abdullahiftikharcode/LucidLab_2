@@ -8,8 +8,8 @@ import {
 
 export default function useExperiment(expName: string) {
   const fsapp = useFirestore();
-  const { data: experiment } = useFirestoreDocData(getExperimentDocRef(fsapp, expName));
-  const { data: scenes } = useFirestoreCollectionData(
+  const { data: experiment, status: expStatus } = useFirestoreDocData(getExperimentDocRef(fsapp, expName));
+  const { data: scenes, status: scenesStatus } = useFirestoreCollectionData(
     getScenesCollectionRef(fsapp, expName),
   );
 
@@ -46,6 +46,7 @@ export default function useExperiment(expName: string) {
   return {
     experiment,
     scenes: (scenes as any[]) ?? [],
+    loading: expStatus === 'loading' || scenesStatus === 'loading',
     createScene,
     createSelf,
     updateExperiment,

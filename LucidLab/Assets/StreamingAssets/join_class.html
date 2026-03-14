@@ -59,7 +59,7 @@
             <h2 class="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-tight flex-1 ml-2">
                 Student Dashboard</h2>
             <div class="flex w-12 items-center justify-end">
-                <button class="text-slate-900 dark:text-slate-100">
+                <button id="notif-btn" class="text-slate-900 dark:text-slate-100">
                     <span class="material-symbols-outlined">notifications</span>
                 </button>
             </div>
@@ -153,6 +153,31 @@
             </p>
         </div>
     </div>
+    <script>
+        document.getElementById("notif-btn").addEventListener("click", function() {
+            parent.postMessage("navigate:notifications", "*");
+        });
+
+        const joinBtn = document.querySelector('button.bg-primary');
+        const codeInput = document.querySelector('input.code-input');
+
+        joinBtn.addEventListener('click', function() {
+            const code = codeInput.value.trim();
+            if (!code) return;
+            
+            joinBtn.disabled = true;
+            joinBtn.innerHTML = '<span class="material-symbols-outlined animate-spin" style="font-size: 20px;">progress_activity</span> Joining...';
+            
+            // Send to Unity/Parent
+            parent.postMessage({ type: "join_classroom", code: code.toUpperCase() }, "*");
+            
+            // Re-enable if no response or after timeout (optional, but good for UI resilience)
+            setTimeout(() => {
+                joinBtn.disabled = false;
+                joinBtn.innerHTML = '<span>Join Class</span><span class="material-symbols-outlined text-xl">login</span>';
+            }, 5000);
+        });
+    </script>
 </body>
 
 </html>

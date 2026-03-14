@@ -156,6 +156,21 @@ export default function ClassroomDetail() {
     for (const eid of selectedExpIds) {
       await updateDoc(doc(db, 'classrooms', classroomId!), { experimentIds: arrayUnion(eid), updatedAt: serverTimestamp() });
       await updateDoc(doc(db, 'experiments', eid), { classroomIds: arrayUnion(classroomId!) });
+      
+      // Create notifications for all students
+      const expTitle = availableExperiments.find(e => e.id === eid)?.title || 'New experiment';
+      for (const student of members) {
+        await addDoc(collection(db, 'notifications'), {
+          userId: student.id,
+          type: 'assignment_assigned',
+          title: 'New Experiment Assigned',
+          message: `${expTitle} has been assigned to ${classroom?.name}`,
+          link: `/classroom/${classroomId}`, // Link format for student app
+          isRead: false,
+          createdAt: serverTimestamp(),
+          data: { classroomId, experimentId: eid }
+        });
+      }
     }
     setShowAssignModal(false); loadClassroom();
   }
@@ -177,10 +192,10 @@ export default function ClassroomDetail() {
       <div className="bg-background-light dark:bg-background-dark min-h-screen font-display text-slate-900 dark:text-slate-100" style={{ fontFamily: "'Inter', sans-serif" }}>
         <TopBar />
         <main className="max-w-[1280px] mx-auto p-6 lg:p-10">
-          <div className="animate-pulse space-y-6">
-            <div className="h-8 bg-slate-200 dark:bg-slate-800 rounded w-64" />
-            <div className="h-48 bg-slate-200 dark:bg-slate-800 rounded-xl" />
-            <div className="h-64 bg-slate-200 dark:bg-slate-800 rounded-xl" />
+          <div className="space-y-6">
+            <div className="h-8 rounded w-64 skeleton-shimmer" />
+            <div className="h-48 rounded-xl skeleton-shimmer" />
+            <div className="h-64 rounded-xl skeleton-shimmer" />
           </div>
         </main>
       </div>

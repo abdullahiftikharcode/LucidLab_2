@@ -16,6 +16,8 @@
       -webkit-tap-highlight-color: transparent;
       user-select: none; -webkit-user-select: none;
     }
+
+    /* ===== Toolbelt pill ===== */
     .toolbelt {
       display: flex; flex-direction: column; align-items: center; gap: 6px;
       padding: 8px 6px; border-radius: 999px;
@@ -31,11 +33,31 @@
       transition: all 0.15s;
     }
     .tool-btn:active { background: rgba(0, 242, 255, 0.15); color: var(--primary); }
-    .tool-btn.active { background: rgba(0, 242, 255, 0.15); color: var(--primary); }
+    .tool-btn.active  { background: rgba(0, 242, 255, 0.15); color: var(--primary); }
     .tool-btn .material-symbols-outlined { font-size: 20px; }
+
+    /* Submit button — neon accent to stand out */
+    .tool-btn.submit-btn {
+      background: rgba(0, 242, 255, 0.12);
+      border: 1px solid rgba(0, 242, 255, 0.35);
+      color: var(--primary);
+    }
+    .tool-btn.submit-btn:active {
+      background: rgba(0, 242, 255, 0.28);
+      box-shadow: 0 0 14px rgba(0, 242, 255, 0.45);
+    }
+
+    /* Thin divider */
+    .tool-sep {
+      width: 24px; height: 1px;
+      background: rgba(0, 242, 255, 0.2);
+      border-radius: 999px;
+    }
   </style>
 </head>
 <body>
+
+  <!-- ===== Toolbelt strip ===== -->
   <div class="toolbelt">
     <button class="tool-btn active" id="tool-view" onclick="sendToUnity('tool_view')">
       <span class="material-symbols-outlined">visibility</span>
@@ -43,21 +65,35 @@
     <button class="tool-btn" id="tool-ai" onclick="sendToUnity('tool_ai')">
       <span class="material-symbols-outlined">smart_toy</span>
     </button>
-    <button class="tool-btn" id="tool-reset" onclick="sendToUnity('tool_reset')">
-      <span class="material-symbols-outlined">refresh</span>
+    <div class="tool-sep"></div>
+    <!-- Submit button — asks Unity to open the full-screen confirm panel -->
+    <button class="tool-btn submit-btn" id="tool-submit" onclick="requestSubmit()">
+      <span class="material-symbols-outlined">check_circle</span>
     </button>
   </div>
+
   <script>
     function sendToUnity(msg) {
-      if (window.Unity && window.Unity.call) window.Unity.call(msg);
-      else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.unityControl)
+      if (window.Unity && window.Unity.call) {
+        window.Unity.call(msg);
+      } else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.unityControl) {
         window.webkit.messageHandlers.unityControl.postMessage(msg);
-      else window.location = "unity:" + msg;
+      } else {
+        window.location = "unity:" + msg;
+      }
     }
-    /* Forward touch to Unity so AR scene still receives taps */
-    document.addEventListener('touchstart', function(e) {
+
+    function requestSubmit() {
+      // Ask Unity to open the dedicated full-screen confirmation panel.
+      // That panel runs in its own WebView so it covers the entire screen,
+      // not just the narrow toolbelt strip.
+      sendToUnity("open_submit_confirm");
+    }
+
+    /* Forward touch to Unity so AR scene still receives taps through the toolbelt */
+    document.addEventListener("touchstart", function (e) {
       var t = e.changedTouches[0];
-      if (t) sendToUnity('touch_at:' + Math.round(t.screenX) + ',' + Math.round(t.screenY));
+      if (t) sendToUnity("touch_at:" + Math.round(t.screenX) + "," + Math.round(t.screenY));
     }, { passive: true });
 
     sendToUnity("toolbelt_ready");

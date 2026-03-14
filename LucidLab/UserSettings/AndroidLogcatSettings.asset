@@ -3,7 +3,7 @@
     "m_SelectedProcess": {
         "deviceId": "ZF6523HFKG",
         "name": "com.example.lucidlab",
-        "processId": 17808,
+        "processId": 12965,
         "exited": false
     },
     "m_SelectedPriority": 3,
@@ -35,55 +35,49 @@
         {
             "deviceId": "ZF6523HFKG",
             "name": "com.example.lucidlab",
-            "processId": 30139,
+            "processId": 28862,
             "exited": true
         },
         {
             "deviceId": "ZF6523HFKG",
             "name": "com.example.lucidlab",
-            "processId": 842,
+            "processId": 31288,
             "exited": true
         },
         {
             "deviceId": "ZF6523HFKG",
             "name": "com.example.lucidlab",
-            "processId": 3716,
+            "processId": 318,
             "exited": true
         },
         {
             "deviceId": "ZF6523HFKG",
             "name": "com.example.lucidlab",
-            "processId": 6598,
+            "processId": 3304,
             "exited": true
         },
         {
             "deviceId": "ZF6523HFKG",
             "name": "com.example.lucidlab",
-            "processId": 28375,
+            "processId": 5311,
             "exited": false
         },
         {
             "deviceId": "ZF6523HFKG",
             "name": "com.example.lucidlab",
-            "processId": 673,
+            "processId": 8317,
             "exited": false
         },
         {
             "deviceId": "ZF6523HFKG",
             "name": "com.example.lucidlab",
-            "processId": 9252,
+            "processId": 12151,
             "exited": false
         },
         {
             "deviceId": "ZF6523HFKG",
             "name": "com.example.lucidlab",
-            "processId": 14915,
-            "exited": false
-        },
-        {
-            "deviceId": "ZF6523HFKG",
-            "name": "com.example.lucidlab",
-            "processId": 17808,
+            "processId": 12965,
             "exited": false
         },
         {
@@ -263,5 +257,5 @@
             "exited": false
         }
     },
-    "m_AutoScroll": 2
+    "m_AutoScroll": 0
 }
