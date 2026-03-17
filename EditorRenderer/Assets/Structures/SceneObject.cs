@@ -71,12 +71,32 @@ namespace Assets.Structures {
             return _cachedStandardShader;
         }
 
+        private static bool LooksLikeHex(string s) {
+            if (string.IsNullOrEmpty(s)) return false;
+            int len = s.Length;
+            if (len != 3 && len != 4 && len != 6 && len != 8) return false;
+            for (int i = 0; i < len; i++) {
+                char c = s[i];
+                bool isHex =
+                    (c >= '0' && c <= '9') ||
+                    (c >= 'a' && c <= 'f') ||
+                    (c >= 'A' && c <= 'F');
+                if (!isHex) return false;
+            }
+            return true;
+        }
+
         public void UpdateColor() {
             if (!_gameObject) throw new Exception("InitGameobject first!");
 
             var colorToParse = color;
-            if (!string.IsNullOrEmpty(colorToParse) && colorToParse[0] != '#')
-                colorToParse = "#" + colorToParse;
+            if (!string.IsNullOrEmpty(colorToParse) && colorToParse[0] != '#') {
+                // If it looks like raw hex (e.g. FF0000), prefix '#'; otherwise let Unity
+                // handle named colors like "red", "blue", etc.
+                if (LooksLikeHex(colorToParse)) {
+                    colorToParse = "#" + colorToParse;
+                }
+            }
 
             if (!ColorUtility.TryParseHtmlString(colorToParse, out Color clr)) {
                 Debug.LogWarning($"[SceneObject] Invalid color string for '{objectName}': {color}");

@@ -127,57 +127,17 @@ export default function UnityViewer({ style, expName, sceneName, sceneLogic, obj
     return () => window.removeEventListener('unityObjectSelected', handleObjectSelected);
   }, [setSelectedObject]);
 
-  // Prevent browser from capturing left-drag so Unity receives pointer/mouse events for orbit (Hand tool).
-  // Use pointer events + setPointerCapture; preventDefault on pointermove during drag so browser doesn't steal it.
+  // Hierarchy double-click: focus camera on object in Unity.
   React.useEffect(() => {
-    let cleanup: (() => void) | undefined;
-    const attach = () => {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      let isLeftDragging = false;
-      const onPointerDown = (e: PointerEvent) => {
-        if (e.button === 0 && activeTool === 'Hand') {
-          e.preventDefault();
-          isLeftDragging = true;
-          canvas.focus?.();
-          try {
-            canvas.setPointerCapture(e.pointerId);
-          } catch {
-            // ignore
-          }
-        }
-      };
-      const onPointerUp = (e: PointerEvent) => {
-        if (e.button === 0) {
-          isLeftDragging = false;
-          try {
-            canvas.releasePointerCapture(e.pointerId);
-          } catch {
-            // ignore
-          }
-        }
-      };
-      const onPointerMove = (e: PointerEvent) => {
-        if (isLeftDragging) e.preventDefault();
-      };
-      canvas.addEventListener('pointerdown', onPointerDown, { capture: true });
-      canvas.addEventListener('pointerup', onPointerUp, { capture: true });
-      canvas.addEventListener('pointermove', onPointerMove, { capture: true });
-      cleanup = () => {
-        canvas.removeEventListener('pointerdown', onPointerDown, { capture: true });
-        canvas.removeEventListener('pointerup', onPointerUp, { capture: true });
-        canvas.removeEventListener('pointermove', onPointerMove, { capture: true });
-      };
+    const onFocusObject = (e: Event) => {
+      const ev = e as CustomEvent<string>;
+      if (!unityContext.isLoaded || !ev.detail) return;
+      // Main Camera is the GameObject that has FreeFlyCamera attached.
+      unityContext.sendMessage('Main Camera', 'FocusOnObject', ev.detail);
     };
-    attach();
-    const id = requestAnimationFrame(() => {
-      if (!cleanup) attach();
-    });
-    return () => {
-      cancelAnimationFrame(id);
-      cleanup?.();
-    };
-  }, [activeTool, unityContext.isLoaded]);
+    window.addEventListener('designerFocusObject', onFocusObject);
+    return () => window.removeEventListener('designerFocusObject', onFocusObject);
+  }, [unityContext]);
 
   // Determine actual cursor
   let currentCursor = 'default';

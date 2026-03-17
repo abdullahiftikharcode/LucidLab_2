@@ -138,9 +138,9 @@ public class FreeFlyCamera : MonoBehaviour
             return;
 
         bool isHandTool = _toolController != null && _toolController.currentTool == ToolController.ToolMode.Hand;
+        bool isLeftMouseDown = Input.GetMouseButton(0);
         bool isRightMouseDown = Input.GetMouseButton(1);
         bool isMiddleMouseDown = Input.GetMouseButton(2);
-        bool shift = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
         bool alt = Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt);
 
         // Dolly (move in depth): Alt+right-drag vertical
@@ -151,8 +151,8 @@ public class FreeFlyCamera : MonoBehaviour
             transform.position += transform.forward * (dy * _dollySpeed);
         }
 
-        // Pan: middle mouse or Shift+right-drag (so right-drag alone = orbit)
-        bool wantPan = !wantDolly && (isMiddleMouseDown || (isRightMouseDown && shift));
+        // Pan: left-drag when Hand tool is active, or middle mouse
+        bool wantPan = !wantDolly && (isMiddleMouseDown || (isHandTool && isLeftMouseDown));
         if (wantPan)
         {
             if (!_isPanning)
@@ -180,25 +180,28 @@ public class FreeFlyCamera : MonoBehaviour
             if (_enableTranslation)
                 transform.Translate(Vector3.forward * Input.mouseScrollDelta.y * Time.deltaTime * _translationSpeed);
 
-            // WASD/QE movement
+            // Movement: A/D = left/right, W/S = up/down, Q/E = depth in/out
             if (_enableMovement)
             {
                 Vector3 deltaPosition = Vector3.zero;
                 float currentSpeed = _movementSpeed;
                 if (Input.GetKey(_boostSpeed))
                     currentSpeed = _boostedSpeed;
-                if (Input.GetKey(KeyCode.W)) deltaPosition += transform.forward;
-                if (Input.GetKey(KeyCode.S)) deltaPosition -= transform.forward;
+                // Horizontal
                 if (Input.GetKey(KeyCode.A)) deltaPosition -= transform.right;
                 if (Input.GetKey(KeyCode.D)) deltaPosition += transform.right;
-                if (Input.GetKey(_moveUp)) deltaPosition += transform.up;
-                if (Input.GetKey(_moveDown)) deltaPosition -= transform.up;
+                // Vertical (world up/down)
+                if (Input.GetKey(KeyCode.W)) deltaPosition += transform.up;
+                if (Input.GetKey(KeyCode.S)) deltaPosition -= transform.up;
+                // Depth (forward/back)
+                if (Input.GetKey(KeyCode.E)) deltaPosition += transform.forward;
+                if (Input.GetKey(KeyCode.Q)) deltaPosition -= transform.forward;
                 CalculateCurrentIncrease(deltaPosition != Vector3.zero);
                 transform.position += deltaPosition * currentSpeed * _currentIncrease;
             }
 
-            // Orbit: right-mouse drag, or left-drag when Hand tool (click on empty space then drag to orbit)
-            bool allowOrbit = _enableRotation && (isRightMouseDown || (isHandTool && Input.GetMouseButton(0)));
+            // Orbit: right-mouse drag only
+            bool allowOrbit = _enableRotation && isRightMouseDown;
             if (allowOrbit)
             {
                 float pitch = -Input.GetAxis("Mouse Y") * _mouseSense;
@@ -221,5 +224,19 @@ public class FreeFlyCamera : MonoBehaviour
             transform.position = _initPosition;
             transform.eulerAngles = _initRotation;
         }
+    }
+
+    // Focus camera on a given scene object name (used by hierarchy double-click)
+    public void FocusOnObject(string objectName)
+    {
+        if (string.IsNullOrEmpty(objectName)) return;
+        var target = GameObject.Find(objectName);
+        if (target == null) return;
+
+        var targetPos = target.transform.position;
+        // Position camera a bit above and behind the object, then look at it.
+        Vector3 offset = new Vector3(0f, 1.5f, -4f);
+        transform.position = targetPos + transform.rotation * offset;
+        transform.LookAt(targetPos);
     }
 }
