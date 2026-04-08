@@ -221,16 +221,24 @@ export async function importIntoEditor(
     // Add the exec connections
     for (let key in node.execOutputs) {
       const toId = node.execOutputs[key];
-      await editor.addConnection(
-        new BaseConnection(nodeMap[nodeId], key, nodeMap[toId], 'exec'),
-      );
+      const fromNode = nodeMap[nodeId];
+      const toNode = nodeMap[toId];
+      if (!fromNode || !toNode) continue;
+      // Skip invalid outputs produced by external tools (e.g. AI) to avoid runtime errors
+      if (!fromNode.outputs[key]) continue;
+      await editor.addConnection(new BaseConnection(fromNode, key, toNode, 'exec'));
     }
 
     // Add the data connections
     for (let key in node.inputsFrom) {
       const from = node.inputsFrom[key];
+      const fromNode = nodeMap[from.nodeId];
+      const toNode = nodeMap[nodeId];
+      if (!fromNode || !toNode) continue;
+      if (!fromNode.outputs[from.outputName]) continue;
+      if (!toNode.inputs[key]) continue;
       await editor.addConnection(
-        new BaseConnection(nodeMap[from.nodeId], from.outputName, nodeMap[nodeId], key),
+        new BaseConnection(fromNode, from.outputName, toNode, key),
       );
     }
 
@@ -251,7 +259,8 @@ export async function importIntoEditor(
     }
   }
 
-  AreaExtensions.zoomAt(areaPlugin, editor.getNodes());
+  // Do not auto-zoom here; the editor does an initial zoom on creation.
+  // Re-importing logic (e.g. from AI) should not reset the user's viewport.
 }
 
 export type ExportedNodes = {

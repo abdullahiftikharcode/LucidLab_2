@@ -98,6 +98,7 @@ export default function ExperimentsList() {
   const [confirmDelete, setConfirmDelete] = useState<{ open: boolean; id: string; title: string }>({ open: false, id: '', title: '' });
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [openFilterId, setOpenFilterId] = useState<string | null>(null);
 
   useEffect(() => { if (currentUser) loadExperiments(); }, [currentUser]);
   useEffect(() => {
