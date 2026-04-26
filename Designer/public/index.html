@@ -9,6 +9,22 @@
       name="description"
       content="Web site created using create-react-app"
     />
+    <script>
+      (function () {
+        function setVh() {
+          var viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+          var vh = viewportHeight * 0.01;
+          document.documentElement.style.setProperty('--app-vh', vh + 'px');
+          document.documentElement.style.setProperty('--app-height', viewportHeight + 'px');
+        }
+        setVh();
+        window.addEventListener('resize', setVh);
+        window.addEventListener('orientationchange', setVh);
+        if (window.visualViewport) {
+          window.visualViewport.addEventListener('resize', setVh);
+        }
+      })();
+    </script>
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <!--
       manifest.json provides metadata used when your web app is installed on a
@@ -75,7 +91,14 @@
       }
     </style>
     <style>
-      html, body { overflow-x: hidden; }
+      html, body, #root {
+        min-height: 100dvh;
+        height: auto;
+      }
+      html, body {
+        overflow-x: hidden;
+        overflow-y: scroll;
+      }
       * { scrollbar-width: thin; scrollbar-color: #334155 transparent; }
       ::-webkit-scrollbar { width: 8px; height: 8px; }
       ::-webkit-scrollbar-track { background: transparent; }

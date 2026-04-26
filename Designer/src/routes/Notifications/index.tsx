@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getFirestore, collection, query, where, orderBy, onSnapshot, doc, updateDoc, serverTimestamp, deleteDoc } from 'firebase/firestore';
+import { getFirestore, collection, query, where, onSnapshot, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { useFirebaseApp } from 'reactfire';
 import { useAuth } from '../../contexts/AuthContext';
-import TopBar from '../../components/TopBar';
+import MainNav from '../../components/MainNav';
+import PatternPage from '../../components/layout/PatternPage';
+import AppFooter from '../../components/layout/AppFooter';
+import '../../styles/pages/notifications.css';
 
 export default function NotificationsPage() {
   const app = useFirebaseApp();
@@ -74,19 +77,18 @@ export default function NotificationsPage() {
   };
 
   return (
-    <div className="dark">
-      <div className="bg-background-light dark:bg-background-dark min-h-screen font-display text-slate-900 dark:text-slate-100" style={{ fontFamily: "'Inter', sans-serif" }}>
-        <TopBar />
-        <main className="mx-auto max-w-4xl p-6 lg:p-10">
+    <PatternPage className="notifications-shell flex flex-col" fontFamily="'Quicksand', 'Inter', sans-serif">
+        <MainNav />
+        <main className="mx-auto w-full max-w-4xl flex-1 p-6 lg:p-10">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-slate-100">Notifications</h1>
-              <p className="mt-2 text-slate-500 dark:text-slate-400">Stay updated with classroom activities and student submissions.</p>
+              <h1 className="text-3xl font-black tracking-tight notifications-title">Notifications</h1>
+              <p className="mt-2 text-slate-500">Stay updated with classroom activities and student submissions.</p>
             </div>
             {notifications.some(n => !n.isRead) && (
               <button 
                 onClick={markAllAsRead}
-                className="text-sm font-bold text-primary hover:underline"
+                className="text-sm font-bold text-[#14b8a6] hover:underline"
               >
                 Mark all as read
               </button>
@@ -96,7 +98,7 @@ export default function NotificationsPage() {
           {loading ? (
             <div className="space-y-4">
               {[1, 2, 3, 4].map(i => (
-                <div key={i} className="relative overflow-hidden h-32 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 flex gap-4">
+                <div key={i} className="relative overflow-hidden h-32 rounded-2xl bg-white border border-slate-200 p-5 flex gap-4">
                   <div className="shrink-0 size-12 rounded-xl skeleton-shimmer" />
                   <div className="flex-1 space-y-3">
                     <div className="h-4 w-1/4 rounded skeleton-shimmer" />
@@ -107,12 +109,12 @@ export default function NotificationsPage() {
               ))}
             </div>
           ) : notifications.length === 0 ? (
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center">
-              <div className="size-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4 text-slate-400">
+            <div className="notifications-card p-12 text-center">
+              <div className="size-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4 text-slate-400">
                 <span className="material-symbols-outlined text-4xl">notifications_off</span>
               </div>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">No notifications found</h3>
-              <p className="text-slate-500 dark:text-slate-400 mt-2">We&apos;ll alert you when something important happens.</p>
+              <h3 className="text-lg font-bold text-slate-900">No notifications found</h3>
+              <p className="text-slate-500 mt-2">We&apos;ll alert you when something important happens.</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -120,23 +122,23 @@ export default function NotificationsPage() {
                 <div 
                   key={n.id} 
                   onClick={() => !n.isRead && markAsRead(n.id)}
-                  className={`group relative flex items-start gap-4 p-5 rounded-2xl border transition-all cursor-pointer hover:shadow-md ${!n.isRead ? 'bg-primary/[0.03] dark:bg-primary/[0.05] border-primary/20 shadow-sm shadow-primary/5' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'}`}
+                  className={`group relative flex items-start gap-4 p-5 rounded-2xl border transition-all cursor-pointer hover:shadow-md ${!n.isRead ? 'bg-[#14b8a6]/[0.07] border-[#14b8a6]/30 shadow-sm shadow-[#14b8a6]/10' : 'bg-white border-slate-200'}`}
                 >
-                  <div className={`shrink-0 size-12 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 ${!n.isRead ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>
+                  <div className={`shrink-0 size-12 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 ${!n.isRead ? 'bg-[#14b8a6] text-white shadow-lg shadow-[#14b8a6]/20' : 'bg-slate-100 text-slate-500'}`}>
                     <span className="material-symbols-outlined">{getIcon(n.type)}</span>
                   </div>
                   <div className="flex-1 min-w-0 pr-10">
                     <div className="flex items-center gap-2 mb-1">
-                      <h4 className={`font-bold text-sm ${!n.isRead ? 'text-slate-900 dark:text-white' : 'text-slate-700 dark:text-slate-200'}`}>{n.title}</h4>
-                      {!n.isRead && <span className="size-2 rounded-full bg-primary animate-pulse" />}
+                      <h4 className={`font-bold text-sm ${!n.isRead ? 'text-slate-900' : 'text-slate-700'}`}>{n.title}</h4>
+                      {!n.isRead && <span className="size-2 rounded-full bg-[#14b8a6] animate-pulse" />}
                     </div>
-                    <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed mb-2">{n.message}</p>
+                    <p className="text-sm text-slate-600 leading-relaxed mb-2">{n.message}</p>
                     <div className="flex items-center gap-4">
-                      <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">{formatFullTime(n.createdAt)}</span>
+                      <span className="text-xs text-slate-400 font-medium">{formatFullTime(n.createdAt)}</span>
                       {n.link && (
                         <Link 
                           to={n.link} 
-                          className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
+                          className="text-xs font-bold text-[#14b8a6] hover:underline flex items-center gap-1"
                         >
                           View Details
                           <span className="material-symbols-outlined text-xs">arrow_forward</span>
@@ -146,7 +148,7 @@ export default function NotificationsPage() {
                   </div>
                   <button 
                     onClick={(e) => { e.stopPropagation(); deleteNotification(n.id); }}
-                    className="absolute top-5 right-5 opacity-0 group-hover:opacity-100 p-2 text-slate-400 hover:text-red-500 transition-all rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10"
+                    className="absolute top-5 right-5 opacity-0 group-hover:opacity-100 p-2 text-slate-400 hover:text-red-500 transition-all rounded-lg hover:bg-red-50"
                   >
                     <span className="material-symbols-outlined text-lg">delete</span>
                   </button>
@@ -155,7 +157,7 @@ export default function NotificationsPage() {
             </div>
           )}
         </main>
-      </div>
-    </div>
+        <AppFooter />
+    </PatternPage>
   );
 }

@@ -3,10 +3,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import { getFirestore, collection, query, where, getDocs, addDoc, doc, setDoc, updateDoc, arrayUnion, serverTimestamp } from 'firebase/firestore';
 import { useFirebaseApp } from 'reactfire';
 import { useAuth } from '../../contexts/AuthContext';
-import TopBar from '../../components/TopBar';
-import StatusBadge from '../../components/StatusBadge';
-import EmptyState from '../../components/EmptyState';
 import { uploadCoverImage } from '../../utils/storageHelpers';
+import MainNav from '../../components/MainNav';
+import PatternPage from '../../components/layout/PatternPage';
+import AppFooter from '../../components/layout/AppFooter';
+import '../../styles/pages/dashboard.css';
 
 interface Classroom {
   id: string;
@@ -28,34 +29,7 @@ interface Experiment {
   updatedAt: any;
 }
 
-const SUBJECT_COLORS: Record<string, { bg: string; text: string }> = {
-  Biology: { bg: 'bg-blue-100', text: 'text-blue-700' },
-  Physics: { bg: 'bg-purple-100', text: 'text-purple-700' },
-  Chemistry: { bg: 'bg-emerald-100', text: 'text-emerald-700' },
-  'Environmental Science': { bg: 'bg-teal-100', text: 'text-teal-700' },
-  'General Science': { bg: 'bg-indigo-100', text: 'text-indigo-700' },
-  Other: { bg: 'bg-slate-100', text: 'text-slate-700' },
-};
-
 const SUBJECTS = ['Chemistry', 'Physics', 'Biology', 'Environmental Science', 'General Science', 'Other'];
-
-const SUBJECT_BADGE_CLASSES: Record<string, string> = {
-  Chemistry: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-  Physics: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
-  Biology: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-  'Environmental Science': 'bg-teal-500/10 text-teal-400 border-teal-500/20',
-  'General Science': 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
-  Other: 'bg-slate-500/10 text-slate-400 border-slate-500/20',
-};
-
-const SUBJECT_REPRESENTATIVE_ICON: Record<string, string> = {
-  Chemistry: 'science',
-  Physics: 'speed',
-  Biology: 'biotech',
-  'Environmental Science': 'eco',
-  'General Science': 'category',
-  Other: 'school',
-};
 
 const SUBJECT_ICON_POOLS: Record<string, string[]> = {
   Chemistry: ['science', 'biotech', 'water_drop', 'calculate', 'shield', 'memory', 'graphic_eq', 'flare', 'device_thermostat'],
@@ -75,14 +49,6 @@ function pickSubjectIcon(subject: string, seed: string): string {
   }
   const idx = Math.abs(h) % pool.length;
   return pool[idx] || 'science';
-}
-
-function subjectBadgeClasses(s: string): string {
-  return SUBJECT_BADGE_CLASSES[s] || SUBJECT_BADGE_CLASSES.Other;
-}
-
-function subjectIconForBadge(s: string): string {
-  return SUBJECT_REPRESENTATIVE_ICON[s] || SUBJECT_REPRESENTATIVE_ICON.Other;
 }
 
 function generateJoinCode(): string {
@@ -105,7 +71,6 @@ export default function DashboardHome() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [creating, setCreating] = useState(false);
   const [newClassroom, setNewClassroom] = useState({ name: '', subject: 'Chemistry', description: '' });
-  const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
@@ -196,282 +161,285 @@ export default function DashboardHome() {
     setCreating(false);
   }
 
-  function copyCode(code: string) {
-    navigator.clipboard.writeText(code);
-    setCopiedCode(code);
-    setTimeout(() => setCopiedCode(null), 2000);
-  }
-
   function formatDate(ts: any) {
     if (!ts) return '—';
     const d = ts.toDate ? ts.toDate() : new Date(ts);
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   }
 
-  const subjectColor = (s: string) => SUBJECT_COLORS[s] || SUBJECT_COLORS.Other;
+  function statusLabel(status?: string) {
+    const s = (status || '').toLowerCase();
+    if (s === 'published' || s === 'ready') return 'READY TO PLAY';
+    if (s === 'draft') return 'DRAFT';
+    return (status || 'Loading...').toUpperCase();
+  }
+
+  function statusClasses(status?: string) {
+    const s = (status || '').toLowerCase();
+    if (s === 'published' || s === 'ready') return 'bg-[#e6fcf9] text-[#0f766e] border border-[#99f6e4]';
+    if (s === 'draft') return 'bg-[#fff2f0] text-[#ff8e7a] border border-[#ff8e7a]/20';
+    return 'bg-slate-100 text-slate-500 border border-slate-200';
+  }
+
+  function experimentCardTone(exp: Experiment) {
+    const category = (exp.category || '').toLowerCase();
+    if (category.includes('bio')) return { bg: 'bg-[#e6fcf9]', iconClass: 'text-[#0f766e]', icon: 'biotech' };
+    if (category.includes('chem')) return { bg: 'bg-[#fffbeb]', iconClass: 'text-yellow-500', icon: 'science' };
+    if (category.includes('physics')) return { bg: 'bg-[#fff2f0]', iconClass: 'text-[#ff8e7a]', icon: 'rocket_launch' };
+    if (category.includes('earth') || category.includes('environment')) return { bg: 'bg-[#fff2f0]', iconClass: 'text-[#ff8e7a]', icon: 'public' };
+    return { bg: 'bg-[#e6fcf9]', iconClass: 'text-[#0f766e]', icon: pickSubjectIcon(exp.category || 'Other', exp.id) };
+  }
+
+  function classroomCardTone(subject: string, seed: string) {
+    const s = (subject || '').toLowerCase();
+    if (s.includes('physics')) return { bg: 'bg-[#e6fcf9]', iconClass: 'text-[#13ecc8]', icon: 'rocket_launch', hoverColor: '#13ecc8', softColor: '#e6fcf9' };
+    if (s.includes('bio')) return { bg: 'bg-[#f4f3ff]', iconClass: 'text-indigo-400', icon: 'biotech', hoverColor: '#818cf8', softColor: '#f4f3ff' };
+    if (s.includes('chem')) return { bg: 'bg-[#fffbeb]', iconClass: 'text-yellow-500', icon: 'chemistry', hoverColor: '#eab308', softColor: '#fffbeb' };
+    if (s.includes('environment')) return { bg: 'bg-[#fff2f0]', iconClass: 'text-[#ff8e7a]', icon: 'public', hoverColor: '#ff8e7a', softColor: '#fff2f0' };
+    return { bg: 'bg-[#e6fcf9]', iconClass: 'text-[#13ecc8]', icon: pickSubjectIcon(subject, seed), hoverColor: '#13ecc8', softColor: '#e6fcf9' };
+  }
 
   return (
-    <div className="dark">
-      <div className="bg-background-light dark:bg-background-dark min-h-screen font-display text-slate-900 dark:text-slate-100" style={{ fontFamily: "'Inter', sans-serif" }}>
-        <TopBar />
-        <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col p-6 lg:p-10">
-          <div className="mb-10">
-            <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-slate-100">Instructor Dashboard</h1>
-            <p className="mt-2 text-slate-500 dark:text-slate-400">Manage your AR classrooms and active science experiments in real-time.</p>
-          </div>
+    <PatternPage className="font-display text-slate-800 antialiased" fontFamily="'Spline Sans', 'Inter', sans-serif">
+      <div className="min-h-screen themed-scrollbar overflow-y-auto">
+        <MainNav />
 
-          {/* My Classrooms Section */}
-          <section className="mb-12">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold tracking-tight">My Classrooms</h2>
-              <button
-                onClick={() => setShowCreateModal(true)}
-                className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white hover:bg-primary/90 transition-all shadow-sm shadow-primary/20"
-              >
-                <span className="material-symbols-outlined text-lg">add</span>
-                New Classroom
-              </button>
-            </div>
-
-            {loadingClassrooms ? (
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {[1, 2, 3].map(i => (
-                  <div key={i} className="relative overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 h-48 space-y-4">
-                    <div className="h-24 rounded-lg skeleton-shimmer" />
-                    <div className="h-4 w-2/3 rounded skeleton-shimmer" />
-                  </div>
-                ))}
+        <main className="min-w-0">
+          <div className="px-4 py-6 pb-12 sm:px-6 lg:px-8 sm:py-8 sm:pb-14 space-y-10 sm:space-y-12">
+            <section id="classrooms">
+              <div className="flex items-center justify-between mb-8">
+                <div>
+                  <h2 className="text-3xl font-bold tracking-tight text-slate-900">My Classrooms</h2>
+                  <p className="text-slate-500 text-sm mt-1 font-medium">Where the magic happens!</p>
+                </div>
+                <button onClick={() => setShowCreateModal(true)} className="flex items-center gap-2 px-6 py-3 bg-[#ff8e7a] text-white text-sm font-bold rounded-full hover:shadow-lg hover:shadow-[#ff8e7a]/30 transition-all">
+                  <span className="material-symbols-outlined text-lg">add</span>
+                  New Room
+                </button>
               </div>
-            ) : classrooms.length === 0 ? (
-              <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                <EmptyState
-                  icon="school"
-                  title="No classrooms yet"
-                  description="Create your first classroom to start organizing students and assigning experiments."
-                  actionLabel="Create Classroom"
-                  onAction={() => setShowCreateModal(true)}
-                />
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {classrooms.map(c => (
-                  <Link
-                    to={`/classrooms/${c.id}`}
-                    key={c.id}
-                    className="group flex flex-col overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm transition-all hover:shadow-md"
-                  >
-                    <div className={`h-28 relative overflow-hidden ${c.coverImageURL ? '' : 'bg-gradient-to-br from-primary/20 to-primary/5'}`}>
-                    {c.coverImageURL ? (
-                      <img src={c.coverImageURL} alt="" className="w-full h-full object-cover" loading="lazy" decoding="async" />
-                      ) : (
-                        <div className="absolute inset-0 flex items-center justify-center opacity-20">
-                          <span className="material-symbols-outlined text-6xl text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>{pickSubjectIcon(c.subject, c.id || c.name || c.joinCode)}</span>
-                        </div>
-                      )}
-                      <div className="absolute top-3 left-3">
-                        <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wide border backdrop-blur-sm ${subjectBadgeClasses(c.subject)}`}>
-                          <span className="material-symbols-outlined text-base">{subjectIconForBadge(c.subject)}</span>
-                          <span>{c.subject}</span>
-                        </span>
-                      </div>
-                      <span className="absolute top-3 right-3 material-symbols-outlined text-white/60 group-hover:text-white/90 drop-shadow">chevron_right</span>
-                    </div>
-                    <div className="flex flex-col p-5">
-                      <h3 className="text-lg font-bold">{c.name}</h3>
-                      <div className="mt-3 flex items-center gap-4 text-sm text-slate-500 dark:text-slate-400">
-                        <div className="flex items-center gap-1">
-                          <span className="material-symbols-outlined text-base text-slate-400 dark:text-slate-500">groups</span>
-                          <span>{c.studentCount} Students</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <span className="material-symbols-outlined text-base text-slate-400 dark:text-slate-500">science</span>
-                          <span>{c.experimentIds?.length || 0} Experiments</span>
-                        </div>
-                      </div>
-                      <div className="mt-4 flex items-center justify-between rounded-lg bg-slate-50 dark:bg-slate-800 p-3">
-                        <code className="font-mono text-sm font-bold text-slate-700 dark:text-slate-300 tracking-wider">{c.joinCode}</code>
-                        <button
-                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); copyCode(c.joinCode); }}
-                          className="flex items-center gap-1 text-xs font-bold text-primary hover:opacity-80"
-                        >
-                          <span className="material-symbols-outlined text-sm">{copiedCode === c.joinCode ? 'check' : 'content_copy'}</span>
-                          {copiedCode === c.joinCode ? 'COPIED!' : 'COPY CODE'}
-                        </button>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </section>
 
-          {/* Recent Experiments Section */}
-          <section className="mb-12">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold tracking-tight">Recent Experiments</h2>
-              <Link to="/experiments" className="text-sm font-semibold text-primary hover:underline">View All</Link>
-            </div>
-
-            {loadingExperiments ? (
-              <div className="relative overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 h-64 p-6 space-y-4">
+              {loadingClassrooms ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
                   {[1, 2, 3, 4].map(i => (
-                    <div key={i} className="flex gap-4">
-                      <div className="h-4 w-1/3 rounded skeleton-shimmer" />
-                      <div className="h-4 w-1/4 rounded skeleton-shimmer" />
-                      <div className="h-4 w-1/6 rounded skeleton-shimmer" />
+                    <div key={i} className="bg-white rounded-xl p-6 shadow-sm space-y-5">
+                      <div className="aspect-[4/3] rounded-xl skeleton-shimmer" />
+                      <div className="h-5 w-2/3 skeleton-shimmer rounded" />
+                      <div className="h-4 w-full skeleton-shimmer rounded" />
                     </div>
                   ))}
+                </div>
+              ) : classrooms.length === 0 ? (
+                <div className="bg-white rounded-3xl border border-slate-100 p-10 text-center">
+                  <span className="material-symbols-outlined text-5xl text-slate-300">school</span>
+                  <h3 className="mt-3 text-lg font-bold text-slate-900">No classrooms yet</h3>
+                  <p className="mt-1 text-sm text-slate-500">Create your first classroom to start organizing students and assigning experiments.</p>
+                  <button onClick={() => setShowCreateModal(true)} className="mt-5 px-6 py-3 bg-[#13ecc8] text-white text-sm font-bold rounded-full hover:bg-[#10d7b7] transition-colors">Create Classroom</button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
+                  {classrooms.map(c => {
+                    const tone = classroomCardTone(c.subject, c.id || c.name || c.joinCode);
+                    return (
+                      <Link
+                        key={c.id}
+                        to={`/classrooms/${c.id}`}
+                        className="bg-white rounded-xl dashboard-bubbly-card p-6 flex flex-col group shadow-sm"
+                        style={{
+                          ['--card-hover-color' as any]: tone.hoverColor,
+                          ['--card-soft-color' as any]: tone.softColor,
+                          ['--card-text-color' as any]: tone.hoverColor,
+                        }}
+                      >
+                        <div className={`relative aspect-[4/3] rounded-xl overflow-hidden mb-5 flex items-center justify-center ${c.coverImageURL ? '' : tone.bg}`}>
+                          {c.coverImageURL ? (
+                            <img src={c.coverImageURL} alt="" className="w-full h-full object-cover" loading="lazy" decoding="async" />
+                          ) : (
+                            <span className={`material-symbols-outlined text-6xl opacity-40 group-hover:scale-110 transition-transform ${tone.iconClass}`}>{tone.icon}</span>
+                          )}
+                        </div>
+                        <h3 className="font-bold text-lg text-slate-900 mb-2 truncate">{c.name}</h3>
+                        <div className="flex items-center justify-between text-xs font-bold text-slate-400 mb-6">
+                          <div className="flex items-center gap-1.5">
+                            <span className="material-symbols-outlined text-sm">face</span>
+                            <span>{c.studentCount} Friends</span>
+                          </div>
+                          <span className="bg-slate-50 px-2 py-1 rounded-lg">{c.joinCode}</span>
+                        </div>
+                        <div className="w-full py-3.5 text-sm font-bold rounded-full text-center dashboard-card-jump-btn">Jump In</div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
+
+            <section id="experiments">
+              <div className="flex items-center justify-between mb-8">
+                <div>
+                  <h2 className="text-3xl font-bold tracking-tight text-slate-900">Fun Experiments</h2>
+                  <p className="text-slate-500 text-sm mt-1 font-medium">Pick a topic and start exploring!</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => navigate('/experiments')}
+                  className="px-5 py-2.5 rounded-full bg-white border border-slate-200 text-slate-600 hover:text-[#13ecc8] hover:border-[#13ecc8]/40 transition-all text-sm font-semibold shadow-sm"
+                >
+                  View all
+                </button>
               </div>
-            ) : experiments.length === 0 ? (
-              <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                <EmptyState
-                  icon="science"
-                  title="No experiments yet"
-                  description="Create your first experiment to get started with AR science content."
-                  actionLabel="Create Experiment"
-                  onAction={() => navigate('/experiments')}
-                />
-              </div>
-            ) : (
-              <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
-                <table className="w-full text-left text-sm">
-                  <thead className="bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 uppercase text-xs font-bold tracking-wider">
-                    <tr>
-                      <th className="px-6 py-4">Experiment Title</th>
-                      <th className="px-6 py-4">Category</th>
-                      <th className="px-6 py-4">Status</th>
-                      <th className="px-6 py-4">Code</th>
-                      <th className="px-6 py-4">Updated</th>
-                      <th className="px-6 py-4 text-right">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {experiments.map(exp => (
-                      <tr key={exp.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
-                        <td className="px-6 py-4 font-semibold text-slate-900 dark:text-slate-100">{exp.title || 'Untitled'}</td>
-                        <td className="px-6 py-4">{exp.category || '—'}</td>
-                        <td className="px-6 py-4">
-                          <StatusBadge status={exp.status || 'draft'} />
-                        </td>
-                        <td className="px-6 py-4 font-mono text-slate-500 dark:text-slate-400">{exp.experimentCode || '—'}</td>
-                        <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{formatDate(exp.updatedAt)}</td>
-                        <td className="px-6 py-4 text-right">
-                          <Link to={`/experiment/${exp.id}`} className="text-primary font-bold hover:underline">
-                            {exp.status === 'published' ? 'Manage' : 'Edit'}
-                          </Link>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </section>
+
+              {loadingExperiments ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
+                  {[1, 2, 3].map(i => (
+                    <div key={i} className="bg-white rounded-xl p-5 shadow-sm space-y-4 min-w-0">
+                      <div className="w-full h-44 rounded-xl skeleton-shimmer" />
+                      <div className="h-4 w-1/2 rounded skeleton-shimmer" />
+                      <div className="h-3 w-2/3 rounded skeleton-shimmer" />
+                    </div>
+                  ))}
+                </div>
+              ) : experiments.length === 0 ? (
+                <div className="bg-white rounded-3xl border border-slate-100 p-10 text-center">
+                  <span className="material-symbols-outlined text-5xl text-slate-300">science</span>
+                  <h3 className="mt-3 text-lg font-bold text-slate-900">No experiments yet</h3>
+                  <p className="mt-1 text-sm text-slate-500">Create your first experiment to get started with AR science content.</p>
+                  <button onClick={() => navigate('/experiments')} className="mt-5 px-6 py-3 bg-[#13ecc8] text-white text-sm font-bold rounded-full hover:bg-[#10d7b7] transition-colors">Go to Experiments</button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8">
+                  {experiments.map(exp => {
+                    const tone = experimentCardTone(exp);
+                    return (
+                      <Link key={exp.id} to={`/experiment/${exp.id}`} className="block bg-white rounded-xl dashboard-bubbly-card p-5 shadow-sm min-w-0 overflow-hidden">
+                        <div className={`w-full h-44 rounded-xl mb-5 flex items-center justify-center overflow-hidden ${tone.bg}`}>
+                          <span className={`material-symbols-outlined text-7xl opacity-40 ${tone.iconClass}`}>{tone.icon}</span>
+                        </div>
+                        <div className="flex items-center justify-between mb-3">
+                          <span className={`px-3 py-1 text-[10px] font-bold rounded-full uppercase tracking-wider ${statusClasses(exp.status)}`}>{statusLabel(exp.status)}</span>
+                          <span className="text-[10px] font-bold text-slate-400">{formatDate(exp.updatedAt)}</span>
+                        </div>
+                        <h4 className="font-bold text-base text-slate-900 mb-1 truncate">{exp.title || 'Untitled Experiment'}</h4>
+                        <p className="text-xs font-medium text-slate-500">{exp.category || 'General Science'}</p>
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
+
+
+          </div>
         </main>
 
-        {/* Footer */}
-        <footer className="mt-auto border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 py-8">
-          <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 md:flex-row">
-            <div className="flex items-center gap-2 text-slate-400 dark:text-slate-500">
-              <span className="material-symbols-outlined text-xl">science</span>
-              <span className="text-sm font-medium">© 2026 LucidLab. All rights reserved.</span>
-            </div>
-            <div className="flex gap-8 text-sm font-medium text-slate-500 dark:text-slate-400">
-              <a className="hover:text-primary" href="#">Support</a>
-              <a className="hover:text-primary" href="#">Privacy Policy</a>
-            </div>
-          </div>
-        </footer>
+        <AppFooter className="lg:px-8" />
+      </div>
 
         {/* Create Classroom Modal */}
         {showCreateModal && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center">
-            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowCreateModal(false)} />
-            <div className="relative bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 max-w-lg w-full mx-4 z-10">
-              <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-6">Create Classroom</h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Classroom Name *</label>
-                  <input
-                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                    placeholder="e.g., Chemistry Grade 10-A"
-                    value={newClassroom.name}
-                    onChange={e => setNewClassroom({ ...newClassroom, name: e.target.value })}
-                  />
+          <div className="fixed inset-0 z-[100] flex items-start justify-center p-4 sm:p-6 overflow-y-auto">
+            <div className="absolute inset-0 bg-slate-900/20 backdrop-blur-sm" onClick={() => setShowCreateModal(false)} />
+            <div
+              className="relative bg-white w-full max-w-xl rounded-[2rem] shadow-2xl overflow-hidden border border-white flex flex-col z-10 min-h-0 my-2"
+              style={{ maxHeight: 'calc(var(--app-vh, 1vh) * 100 - 1rem)' }}
+            >
+              <div className="bg-[#13ecc8]/20 h-40 flex flex-col items-center justify-center relative overflow-hidden shrink-0">
+                <div className="absolute -top-12 -right-12 w-48 h-48 bg-[#13ecc8]/30 rounded-full blur-3xl" />
+                <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-[#fc8c78]/20 rounded-full blur-2xl" />
+                <div className="w-16 h-16 bg-white rounded-full shadow-lg shadow-[#13ecc8]/50 flex items-center justify-center mb-4 z-10">
+                  <span className="material-symbols-outlined text-[#006b59] text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>science</span>
                 </div>
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Subject *</label>
-                  <select
-                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                    value={newClassroom.subject}
-                    onChange={e => setNewClassroom({ ...newClassroom, subject: e.target.value })}
-                  >
-                    {SUBJECTS.map(s => <option key={s} value={s}>{s}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Description <span className="text-slate-400 dark:text-slate-500 font-normal">(Optional)</span></label>
-                  <textarea
-                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                    placeholder="Brief description of this classroom..."
-                    rows={3}
-                    value={newClassroom.description}
-                    onChange={e => setNewClassroom({ ...newClassroom, description: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Cover Image <span className="text-slate-400 dark:text-slate-500 font-normal">(Optional)</span></label>
-                  <button
-                    type="button"
-                    onClick={() => coverInputRef.current?.click()}
-                    className="w-full h-32 rounded-lg border-2 border-dashed border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:border-primary/50 hover:bg-primary/5 dark:hover:bg-slate-700/50 transition-all flex flex-col items-center justify-center gap-2 overflow-hidden relative"
-                  >
-                    {coverPreview ? (
-                      <>
-                        <img src={coverPreview} alt="Cover" className="w-full h-full object-cover absolute inset-0" />
-                        <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                          <span className="text-white text-sm font-semibold">Change Image</span>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <span className="material-symbols-outlined text-slate-400 dark:text-slate-500 text-2xl">add_photo_alternate</span>
-                        <span className="text-xs text-slate-400 dark:text-slate-500">Click to upload cover image</span>
-                      </>
-                    )}
-                  </button>
-                  <input
-                    ref={coverInputRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={e => {
-                      const f = e.target.files?.[0];
-                      if (f) { setCoverFile(f); setCoverPreview(URL.createObjectURL(f)); }
-                    }}
-                  />
+                <h3 className="text-2xl sm:text-3xl font-bold text-slate-900 z-10 px-8 text-center tracking-tight">Start a New Classroom Adventure</h3>
+              </div>
+
+              <div className="p-6 sm:p-10 space-y-6 overflow-y-auto pr-2 flex-1 min-h-0">
+                <p className="text-sm font-medium text-slate-600 text-center max-w-sm mx-auto">
+                  Classrooms are your digital spaces to organize AR lab sessions, track student discoveries, and share exciting scientific experiments.
+                </p>
+
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-[10px] font-bold tracking-[0.1em] text-[#006b59] ml-4 mb-2">CLASSROOM NAME</label>
+                    <input
+                      className="w-full bg-white border-2 border-[#e1eae6] rounded-full px-6 py-4 text-sm font-medium text-slate-900 outline-none focus:border-[#13ecc8] transition-all"
+                      placeholder="e.g., Chemistry Grade 10-A"
+                      value={newClassroom.name}
+                      onChange={e => setNewClassroom({ ...newClassroom, name: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold tracking-[0.1em] text-[#006b59] ml-4 mb-2">SUBJECT</label>
+                    <select
+                      className="w-full appearance-none bg-white border-2 border-[#e1eae6] rounded-full px-6 py-4 text-sm font-medium text-slate-900 outline-none focus:border-[#13ecc8] transition-all"
+                      value={newClassroom.subject}
+                      onChange={e => setNewClassroom({ ...newClassroom, subject: e.target.value })}
+                    >
+                      {SUBJECTS.map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold tracking-[0.1em] text-[#006b59] ml-4 mb-2">DESCRIPTION <span className="text-slate-400 font-semibold tracking-normal">(Optional)</span></label>
+                    <textarea
+                      className="w-full px-6 py-4 bg-white border-2 border-[#e1eae6] rounded-3xl text-sm font-medium text-slate-900 outline-none focus:border-[#13ecc8] transition-all"
+                      placeholder="Brief description of this classroom..."
+                      rows={3}
+                      value={newClassroom.description}
+                      onChange={e => setNewClassroom({ ...newClassroom, description: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold tracking-[0.1em] text-[#006b59] ml-4 mb-2">COVER IMAGE <span className="text-slate-400 font-semibold tracking-normal">(Optional)</span></label>
+                    <button
+                      type="button"
+                      onClick={() => coverInputRef.current?.click()}
+                      className="w-full h-32 rounded-3xl border-2 border-dashed border-[#13ecc8]/50 bg-[#f3fbf7] hover:border-[#13ecc8] hover:bg-[#13ecc8]/10 transition-all flex flex-col items-center justify-center gap-2 overflow-hidden relative"
+                    >
+                      {coverPreview ? (
+                        <>
+                          <img src={coverPreview} alt="Cover" className="w-full h-full object-cover absolute inset-0" />
+                          <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                            <span className="text-white text-sm font-semibold">Change Image</span>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <span className="material-symbols-outlined text-slate-400 text-2xl">add_photo_alternate</span>
+                          <span className="text-xs text-slate-400">Click to upload cover image</span>
+                        </>
+                      )}
+                    </button>
+                    <input
+                      ref={coverInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={e => {
+                        const f = e.target.files?.[0];
+                        if (f) { setCoverFile(f); setCoverPreview(URL.createObjectURL(f)); }
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
-              <div className="flex justify-end gap-3 mt-6">
+
+              <div className="px-6 sm:px-10 pb-6 sm:pb-10 pt-2 flex items-center justify-between gap-4 bg-white shrink-0 border-t border-[#e1eae6] z-20 mt-auto">
                 <button
                   onClick={() => setShowCreateModal(false)}
-                  className="px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                  className="font-button text-button text-on-surface-variant hover:text-on-surface px-6 py-3 rounded-full transition-colors bubbly-pop"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleCreateClassroom}
                   disabled={creating || !newClassroom.name.trim()}
-                  className="px-6 py-2.5 rounded-lg bg-primary text-sm font-bold text-white hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="bg-[#fc8c78] text-[#742418] font-button text-button px-8 py-4 rounded-full shadow-lg shadow-[#fc8c78]/20 bubbly-pop flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {creating && <span className="material-symbols-outlined text-lg animate-spin">progress_activity</span>}
-                  Create
+                  <span className="material-symbols-outlined text-lg">magic_button</span>
+                  Create Classroom
                 </button>
               </div>
             </div>
           </div>
         )}
-      </div>
-    </div>
+    </PatternPage>
   );
 }

@@ -1,0 +1,32 @@
+@import url('https://fonts.googleapis.com/css2?family=Spline+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  --app-vh: 1vh;
+  --app-height: calc(var(--app-vh, 1vh) * 100);
+}
+
+html,
+body,
+#root {
+  min-height: var(--app-height);
+  height: auto;
+}
+
+html,
+body {
+  overflow-x: hidden;
+}
+
+.pattern-page {
+  min-height: var(--app-height);
+  width: 100%;
+  overflow-x: hidden;
+  background-color: #fef9f2;
+  background-image: radial-gradient(#f3e8ff 1px, transparent 1px),
+    radial-gradient(#d1fae5 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-position: 0 0, 20px 20px;
+}
+
+

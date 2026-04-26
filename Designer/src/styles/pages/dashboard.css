@@ -1,0 +1,22 @@
+.dashboard-bubbly-card {
+  border: 2px solid transparent;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.dashboard-bubbly-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--card-hover-color, #13ecc8);
+  box-shadow: 0 15px 30px -10px
+    color-mix(in srgb, var(--card-hover-color, #13ecc8) 28%, transparent);
+}
+
+.dashboard-card-jump-btn {
+  background: var(--card-soft-color, #e6fcf9);
+  color: var(--card-text-color, #0f766e);
+  transition: all 0.25s ease;
+}
+
+.group:hover .dashboard-card-jump-btn {
+  background: var(--card-hover-color, #13ecc8);
+  color: #fff;
+}
