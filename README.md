@@ -1,98 +1,286 @@
 # LucidLab 🧪✨
+> **AR Science Learning Platform — Theory and Applications of Virtual Reality, Spring 2026**
 
-> **Empowering Hands-On Science Education through Augmented Reality**
-
-LucidLab is a comprehensive, two-sided Augmented Reality (AR) education platform designed to make science experiments safer, more accessible, and highly interactive. 
-
-It replaces expensive and potentially dangerous physical lab equipment with highly interactive 3D simulations anchored to physical printed markers (marker-based AR).
+LucidLab is a comprehensive two-sided Augmented Reality (AR) education platform designed to make science experiments safer, more accessible, and highly interactive. It replaces expensive and potentially dangerous physical lab equipment with interactive 3D simulations anchored to physical printed Vuforia markers.
 
 ---
 
-## 🌟 The Platform
+## 👥 Team Members & Roles
 
-LucidLab uses a **classroom-based workflow** (similar to Google Classroom) where instructors and students collaborate. The platform consists of two main applications:
-
-### 1. LucidLab Designer (Web App)
-A powerful web-based authoring tool for **Instructors**.
-*   **Classroom Management:** Create classrooms, manage student rosters, and generate secure join codes.
-*   **Drag-and-Drop Scene Editor:** Place 3D scientific equipment (beakers, burners, meters) onto a virtual canvas and assign them to physical AR markers.
-*   **Visual Programming Language (VPL):** Build complex experiment logic (e.g., "If Beaker A is near Beaker B, change color to red and play bubble particles") using intuitive, connectable node blocks. No coding required.
-*   **AI Assistant Integration:** A scene-aware AI helper that can suggest VPL logic or automatically configure nodes based on natural language requests.
-*   **Evaluation Dashboard:** View student submissions, watch their AR screen recordings, and grade their interactive quizzes.
-
-### 2. LucidLab Player (Mobile App)
-An immersive AR execution engine for **Students**.
-*   **Classroom Access:** Join classrooms via secure codes and browse assigned experiments.
-*   **AR Execution Engine:** Uses AR Foundation (ARCore/ARKit) to detect printed markers on a physical desk and render the interactive 3D experiment scenes.
-*   **Dynamic Logic Engine:** Downloads the JSON-serialized VPL graph from the web Designer and executes the interactive triggers, conditions, and actions in real-time.
-*   **Submission System:** Automatically tracks experiment completion steps, captures screen recordings, administers quizzes, and submits the payload back to the instructor for evaluation.
+| Student ID | Name | Role & Responsibilities |
+|------------|------|------------------------|
+| BSCS23070 | Muhammad Abdullah | **Unity AR mobile app** — runtime, WebView shell, Vuforia experiments, and AI (Vapi/Gemini) integration |
+| BSCS23118 | Abdul Moiz | **Designer Studio** — VPL node editor, scene logic system, and EditorRenderer (Unity WebGL preview) |
+| BSCS23212 | Faizan Amir | **Designer Studio** — React frontend, UI/UX, and component library |
+| BSCS23173 | Waqas Shoaib | **Backend** — Firebase Auth, Firestore, Gemini AI logic generation endpoint |
+| BSCS23176 | Sameer | **Backend** — Supabase storage, asset pipeline, build optimization |
 
 ---
 
-## 🏗️ Architecture & Tech Stack
+## ⚙️ Unity Version (Required)
 
-### Frontend & Authoring
-*   **Web Framework:** React 18, TypeScript, Chakra UI
-*   **Node Graph Editor:** React Flow (for the VPL Editor)
-*   **3D Scene Engine:** Three.js / Custom React wrapper
-*   **Live Preview:** Embedded Unity WebGL iframe (`EditorRenderer`)
+> **Unity 2022.3.62f3 (LTS)**
 
-### Mobile AR Engine
-*   **Game Engine:** Unity 3D (LTS)
-*   **AR Framework:** AR Foundation (Image Tracking)
-*   **Scripting:** C# (Custom runtime Logic Engine for VPL JSON parsing)
+This exact version **must** be used to open either Unity project (`LucidLab/` or `EditorRenderer/`). Using a different version may cause shader, package, or scene compatibility issues.
 
-### Cloud Backend
-*   **Database:** Firebase Firestore (NoSQL, storing Classrooms, Users, Experiments)
-*   **Authentication:** Firebase Auth (Email/Password & Google SSO)
-*   **Storage:** Firebase Storage (Hosting 3D models, marker images, and student video recordings)
-*   **AI Service:** Firebase Cloud Functions + OpenAI/Gemini REST API
+---
+
+## 🌟 Platform Overview
+
+LucidLab consists of **four interconnected components** that together form a complete classroom AR ecosystem:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        LucidLab Platform                     │
+│                                                              │
+│  ┌──────────────┐   REST API   ┌──────────────────────────┐  │
+│  │   Designer   │ ──────────► │       Backend API         │  │
+│  │  (React Web) │             │   (Node/Express + Firebase │  │
+│  └──────┬───────┘             │    + Supabase + Gemini AI) │  │
+│         │ iframe              └──────────────────────────┘  │
+│  ┌──────▼───────┐                                           │
+│  │ EditorRenderer│  (Unity WebGL — live 3D scene preview)   │
+│  └──────────────┘                                           │
+│                                                              │
+│  ┌──────────────┐   REST API   ┌──────────────────────────┐  │
+│  │  LucidLab    │ ──────────► │       Backend API         │  │
+│  │ (Unity AR    │             └──────────────────────────┘  │
+│  │  Mobile App) │                                           │
+│  └──────────────┘                                           │
+└─────────────────────────────────────────────────────────────┘
+```
 
 ---
 
 ## 📂 Project Structure
 
 ```text
-LucidLab/
-├── Designer/              # React Web Application (Instructor Dashboard & Editor)
-├── EduARPlayer/           # Unity Mobile AR Project (Student App)
-├── EditorRenderer/        # Unity WebGL Project (Live preview embedded in Designer)
-├── cloud-functions/       # Firebase Cloud Functions (AI Assistant API, cleanup tasks)
-├── shared/                # Shared TypeScript types and VPL schemas
-├── docs/                  # Comprehensive architecture specifications & workflows
-└── tests/                 # End-to-end and unit testing suites
+LucidLab/                          # Root repository
+├── LucidLab/                      # Unity Mobile AR App (Student)
+│   ├── Assets/
+│   │   ├── Scenes/                # LoginScene, ARMainScene, Chemical, AtomicReaction
+│   │   ├── Scripts/               # AR logic, VPL runtime, demo experiments
+│   │   ├── Materials/             # URP-compatible materials
+│   │   ├── 3DModels/              # Atom, lab equipment, chemical models
+│   │   ├── Textures/
+│   │   │   └── VuforiaTargets/    # Printable marker images (Cl, Na, H, O, ...)
+│   │   └── StreamingAssets/       # WebUI HTML pages (dashboard, student app)
+│   └── Packages/                  # Unity package manifest (URP, Vuforia, AR Foundation)
+│
+├── Designer/                      # React Web App (Instructor)
+│   ├── src/
+│   │   ├── pages/                 # Dashboard, Experiments, Classrooms, Scene Editor
+│   │   ├── components/            # Reusable UI components, VPL node graph editor
+│   │   └── services/              # Firebase, Supabase, API integrations
+│   └── server/                    # Local dev proxy server
+│
+├── EditorRenderer/                # Unity WebGL Project (Live 3D Preview)
+│   └── Assets/                    # Embedded in Designer iframe for scene preview
+│
+├── backend/                       # Node.js/Express REST API Server
+│   └── src/
+│       ├── routes/
+│       │   ├── ai.js              # Gemini AI scene logic generation endpoint
+│       │   ├── firestore.js       # Firestore CRUD operations
+│       │   ├── storage.js         # Supabase file storage operations
+│       │   └── health.js          # Server health check
+│       ├── services/              # Firebase Admin, Supabase client setup
+│       └── middleware/            # Auth verification, error handling
+│
+├── Chemistr-AR-Unity-main/        # Source chemistry AR project (integrated as demo)
+├── docs/                          # Architecture specs & workflow documentation
+├── tests/                         # End-to-end and unit testing suites
+└── README.md                      # This file
 ```
-*(For a deep dive into the architecture, database schema, APIs, and workflows, see the Markdown files in the `/docs` directory).*
 
 ---
 
-## 🚀 Getting Started
+## 🧩 Component Details
+
+### 1. LucidLab — Unity Mobile AR App (Student)
+The primary student-facing mobile application built in Unity.
+
+**Key Features:**
+- AR Foundation (ARCore/ARKit) for marker and plane detection
+- Vuforia Engine for high-precision image target tracking
+- Dynamic VPL runtime that downloads and executes JSON experiment graphs
+- WebView shell (`StreamingAssets/student_app.html`) for the UI layer
+- Built-in quiz system with scoring and submission tracking
+
+**Scenes:**
+| Scene | Purpose |
+|-------|---------|
+| `LoginScene` | Authentication entry point |
+| `ARMainScene` | Main AR runtime with dynamic experiment loading |
+| `Chemical` | Pre-built chemistry lab demo (landscape) |
+| `AtomicReaction` | Vuforia marker-based atomic fusion demo (landscape) |
+
+**Demo Experiments (Atomic Reaction):**
+- **Na + Cl → NaCl** (Sodium Chloride / Salt): Two-marker fusion
+- **O + H + H → H₂O** (Water): Three-marker simultaneous fusion
+- Additional elements: CH₄, C₆H₆, C₃H₆O₃, H₂SO₃, O₃, S, Fe, Au
+
+---
+
+### 2. Designer — React Web App (Instructor)
+A powerful web-based authoring environment for instructors.
+
+**Key Features:**
+- Classroom management: create classrooms, add students via join codes
+- Drag-and-drop scene editor for placing 3D objects onto AR markers
+- **Visual Programming Language (VPL):** node-based logic editor (React Flow)
+- AI Assistant powered by Gemini to auto-generate experiment logic
+- Live 3D preview via embedded `EditorRenderer` iframe
+- Evaluation dashboard for grading submissions
+
+**Tech Stack:** React 18, TypeScript, Chakra UI, React Flow
+
+---
+
+### 3. EditorRenderer — Unity WebGL (Live Preview)
+A Unity WebGL build embedded as an iframe inside the Designer.
+
+**Purpose:** Provides a real-time 3D scene preview of the experiment being authored, so instructors can see how their VPL logic and object placements will look in AR before publishing.
+
+---
+
+### 4. Backend — Node.js/Express REST API
+The central API server that powers both the Designer and the mobile app.
+
+**Endpoints:**
+| Route | Description |
+|-------|-------------|
+| `POST /ai/generate` | Gemini AI scene logic generation |
+| `GET/POST /firestore/...` | Classroom, experiment, user CRUD |
+| `GET/POST /storage/...` | Supabase file upload/download |
+| `GET /health` | Server health check |
+
+**Tech Stack:** Node.js, Express, Firebase Admin SDK, Supabase JS, Gemini REST API
+
+---
+
+## 🏗️ Full Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| **Mobile AR** | Unity 2022.3.62f3 (LTS), AR Foundation 5.2.0, Vuforia Engine |
+| **Render Pipeline** | Universal Render Pipeline (URP) 14.0.12 |
+| **Designer UI** | React 18, TypeScript, Chakra UI, React Flow |
+| **3D Preview** | Unity WebGL (EditorRenderer) |
+| **Backend API** | Node.js, Express 4.x |
+| **Database** | Firebase Firestore (NoSQL) |
+| **Authentication** | Firebase Auth (Email + Google SSO) |
+| **File Storage** | Supabase Storage |
+| **AI** | Google Gemini REST API |
+| **Testing** | Node.js built-in test runner, Playwright (e2e) |
+
+---
+
+## 🚀 How to Run the Application
 
 ### Prerequisites
-*   Node.js (v18+)
-*   Unity Hub & Unity 2022.3.x LTS (with Android/iOS build support)
-*   Firebase CLI
+- **Unity Hub** with Unity **2022.3.62f3 (LTS)** (Android + iOS Build Support modules)
+- **Node.js** v18+ and npm
+- A physical **Android** (ARCore) or **iOS** (ARKit) device for AR testing
+- Firebase project credentials
+- Supabase project credentials
+- Gemini API key
 
-### Running the Designer (Web)
-1. Navigate to the `Designer` directory: `cd Designer`
-2. Install dependencies: `npm install`
-3. Add your Firebase configuration to `src/firebaseConfig.ts`
-4. Start the development server: `npm start`
+---
 
-### Running the Player (Mobile AR)
-1. Open the `EduARPlayer` folder in Unity Hub.
-2. Ensure you have the XR Plugin Management and AR Foundation packages installed.
-3. Sync your Firebase configuration (`google-services.json` / `GoogleService-Info.plist`).
-4. Build and Run to a physical Android or iOS device (AR requires a physical camera).
+### 1. Backend API Server
+
+```bash
+cd backend
+npm install
+cp .env.example .env   # Fill in Firebase, Supabase, and Gemini credentials
+npm start              # Runs at http://localhost:4000 (or configured port)
+```
+
+---
+
+### 2. Designer Web App (Instructor)
+
+```bash
+cd Designer
+npm install
+# Ensure backend URL is set in .env
+npm start              # Runs at http://localhost:3000
+```
+
+---
+
+### 3. LucidLab Unity AR App (Student)
+
+1. Open **Unity Hub** → **Open Project** → select the **`LucidLab/`** folder.
+2. Wait for Unity to import all assets (first load may take several minutes).
+3. Go to **File → Build Settings** and confirm all scenes are listed:
+   - `Assets/Scenes/LoginScene.unity`
+   - `Assets/Scenes/ARMainScene.unity`
+   - `Assets/Scenes/Chemical.unity`
+   - `Assets/Scenes/AtomicReaction.unity`
+4. Select **Android** or **iOS** as the target platform and click **Switch Platform**.
+5. Connect your device and click **Build and Run**.
+
+**To test the Atomic Reaction demo:**
+- Print the marker images from `Assets/Textures/VuforiaTargets/`
+- Hold the **Cl** and **Na** cards in front of the camera and bring them together to trigger the Salt (NaCl) fusion.
+
+---
+
+### 4. EditorRenderer (WebGL Preview — Optional)
+
+The EditorRenderer is a Unity WebGL project that is embedded inside the Designer.
+1. Open **Unity Hub** → **Open Project** → select the **`EditorRenderer/`** folder (Unity **2022.3.62f3**).
+2. Build for **WebGL** (File → Build Settings → WebGL → Build).
+3. Place the output in the Designer's `public/` folder as configured.
 
 ---
 
 ## 🛡️ Security & Privacy
-*   **Role-Based Access:** Enforced via Firebase Firestore Security Rules. Students cannot modify experiment definitions; instructors can only view their own classrooms.
-*   **Data Isolation:** Join-code architecture ensures classroom data is completely walled off from unauthorized users.
-*   **Secure Submissions:** Student video recordings are locked to the specific instructor's viewing privileges.
+
+- **Role-Based Access:** Firebase Firestore Security Rules — students cannot modify experiment definitions.
+- **Data Isolation:** Classroom join-code architecture prevents unauthorized access.
+- **Auth Protection:** All backend routes validate Firebase ID tokens via middleware.
+- **Secure Submissions:** Student recordings are locked to the specific instructor's viewing privileges.
 
 ---
 
-## 📄 License
-This project is proprietary. See the `LICENSE` file for details.
+---
+
+## 📦 Complete Submission Instructions
+
+Follow these instructions for the final project submission (`Group_No_Project_Report.zip`):
+
+### 1. Folder Structure
+Create a folder containing the following items, then zip it:
+- `LucidLab_Project_Report.pdf` (The generated PDF from `report/main.tex`)
+- `Scanned_Prototypes/` (A folder containing your hand-drawn paper prototypes)
+- `Complete_Project_Source.zip` (Or a link in a notepad file if the size exceeds limits)
+- `LucidLab_Unity_Package.unitypackage` (Exported Unity package of the core project)
+- `LucidLab_Demo_Video.mp4` (Video of the running application from start to end)
+- `README.md` (This file)
+
+### 2. Submission Checklist
+- [x] **Project Report:** PDF format, 1-inch margins, justified text, APA style references.
+- [x] **Title Page:** Includes Project Name, Team Names, Reg. Numbers, Course Name, Instructor, and Date.
+- [x] **Storyboard:** At least 6 hand-drawn frames using the Vincent sketch template.
+- [x] **Development Evidence:** At least 5 screenshots of the working application.
+- [x] **Running State:** Verified AR deployment on mobile device.
+- [x] **Naming Convention:** `Group_No_Project_Report.zip` (Replace `Group_No` with your group number).
+
+---
+
+## 📄 Course Information
+
+| Field | Details |
+|-------|---------|
+| Course | Theory and Applications of Virtual Reality |
+| Semester | Spring 2026 |
+| Instructor | Dr. Ibrahim Ghaznavi |
+| TA | Muhammad Qasim |
+| Submission Date | May 2, 2026 |
+
+---
+
+*LucidLab — Spring 2026 — FAST NUCES*
