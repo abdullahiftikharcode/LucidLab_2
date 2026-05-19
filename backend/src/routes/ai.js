@@ -1,20 +1,26 @@
 const express = require("express");
 const { chatJson, chatCompletion } = require("../services/openai");
 const { requireAuth } = require("../middleware/auth");
+const {
+  buildLogicSystemPrompt,
+  buildLogicUserMessage,
+  normalizeCompareBranches,
+  validateGraphConnectivity,
+} = require("../prompts/sceneLogicPrompt");
 
 const APPLY_SCENE_LOGIC_TOOL = {
   type: "function",
   function: {
     name: "apply_scene_logic",
     description:
-      "Generate or update the visual logic graph for the scene. Call when the user asks to build, change, fix, or extend scene behavior, interactions, triggers, or logic nodes.",
+      "Generate or update the full visual logic graph for the scene. Call when the user asks to build, change, fix, or extend scene behavior. The graph must include SceneLoad (and SceneLoop for per-frame logic), with all execOutputs and inputsFrom wires connecting nodes — not isolated single nodes.",
     parameters: {
       type: "object",
       properties: {
         instruction: {
           type: "string",
           description:
-            "Clear instruction for what the logic graph should do, including objects involved.",
+            "Detailed instruction: objects involved, trigger (touch/distance/start), and actions. Mention that the graph must be fully wired (SceneLoad → SceneLoop → Compare → actions) when applicable.",
         },
       },
       required: ["instruction"],
@@ -49,8 +55,6 @@ function hasObjectTarget(node) {
 
   return false;
 }
-
-const CURRENT_LOGIC_JSON_LIMIT = 12000;
 
 const OBJECT_TARGET_NODE_TYPES = new Set([
   "SetColor",
@@ -180,7 +184,16 @@ function repairExportedNodes(nodes, { baseline, objects }) {
     }
   }
 
+  for (const n of Object.values(nodes)) {
+    if (!isPlainObject(n)) continue;
+    // These nodes only emit exec; they have no exec input in the designer.
+    if (n.name === "SceneLoad" || n.name === "SceneLoop") {
+      n.inputsFrom = {};
+    }
+  }
+
   normalizeExportedNodes(nodes);
+  normalizeCompareBranches(nodes);
 }
 
 const NODE_TYPES = new Set([
@@ -287,69 +300,6 @@ function normalizeExportedNodes(nodes) {
   }
 }
 
-function buildSystemPrompt({ objects, currentSceneLogic }) {
-  const objLines =
-    Array.isArray(objects) && objects.length > 0
-      ? objects
-          .map((o) => `- ${o.objectName} (type=${o.objectType})`)
-          .join("\n")
-      : "- (no objects)";
-
-  let currentLogicSection = "Current scene logic: none.";
-  if (isPlainObject(currentSceneLogic) && Object.keys(currentSceneLogic).length > 0) {
-    // Keep this reasonably small to avoid blowing up the prompt.
-    const asString = JSON.stringify(currentSceneLogic, null, 2);
-    const truncated =
-      asString.length > CURRENT_LOGIC_JSON_LIMIT
-        ? asString.slice(0, CURRENT_LOGIC_JSON_LIMIT) + "\n... (truncated) ..."
-        : asString;
-    currentLogicSection = [
-      "Current scene logic (ExportedNodes JSON). This is the graph you should UPDATE or EXTEND when the user prompt sounds like a modification:",
-      "[CURRENT_SCENE_LOGIC_JSON_START]",
-      truncated,
-      "[CURRENT_SCENE_LOGIC_JSON_END]",
-    ].join("\n");
-  }
-
-  return [
-    "You are an expert visual-logic designer for LucidLab.",
-    "You must output ONLY valid JSON (no markdown, no commentary).",
-    "Your output must be an ExportedNodes map keyed by nodeId:",
-    "{ [nodeId]: { name, position:[x,y], controls:{}, execOutputs:{}, inputValues:{}, inputsFrom:{} } }",
-    "",
-    "Allowed node types (name):",
-    Array.from(NODE_TYPES).sort().map((t) => `- ${t}`).join("\n"),
-    "",
-    "Scene objects available (must refer to these exact names in controls like controls.object):",
-    objLines,
-    "",
-    currentLogicSection,
-    "",
-    "Rules:",
-    "- Always include a SceneLoad node, and (if continuous behavior is needed) a SceneLoop node.",
-    "- Use execOutputs to chain execution; use inputsFrom for data connections.",
-    "- Use GetDistanceBetween + Compare to detect 'touch' (distance threshold) if no collision node exists.",
-    "- Use SetVisible (false) to 'disappear'. Use SetColor to change color (hex string, with or without '#').",
-    "- SetColor must ALWAYS include controls.object (exact key \"object\") AND controls.color (exact key \"color\").",
-    "- NEVER use UI labels like \"Object Name\" as JSON keys — only \"object\" and \"color\".",
-    "- When editing an existing graph, keep the same controls.object on each node as in the current logic unless the user explicitly changes the target object.",
-    "- If you only change a color, update controls.color but COPY controls.object from the existing node with the same nodeId.",
-    "- Prefer simple logic that matches the user's intent.",
-    "",
-    "Object naming / reference rules:",
-    "- The engine executes logic against scene OBJECT NAMES (objectName), not natural-language labels.",
-    "- Users may refer to objects by their TYPE or a natural word in the prompt (e.g. 'cow') while the actual objectName is different (e.g. 'co').",
-    "- When the prompt clearly references an object type or description that matches exactly one available object, you MUST use that object's objectName in controls.object.",
-    "- Example: if the user says 'when the cow touches the human' and the only object with type='cow' is objectName='co', you must use controls.object='co' for that cow.",
-    "- Never invent new object names; always choose from the listed objectName values, selecting the best match based on the prompt.",
-    "",
-    "Graph editing rules:",
-    "- Treat the provided current scene logic as the starting point when the user's prompt sounds like a modification or extension (e.g. 'also make the cow jump', 'change this to...').",
-    "- In such cases, UPDATE or EXTEND the existing graph instead of recreating it from scratch, reusing nodeIds where reasonable.",
-    "- You may add or remove nodes and change connections as needed to satisfy the new prompt, but the final output must still be a full ExportedNodes map (not a diff).",
-  ].join("\n");
-}
-
 function buildAssistantSystemPrompt({ objects, currentSceneLogic }) {
   const objLines =
     Array.isArray(objects) && objects.length > 0
@@ -370,7 +320,9 @@ function buildAssistantSystemPrompt({ objects, currentSceneLogic }) {
       ? "This scene already has logic. Prefer extending or editing it when the user asks for behavior changes."
       : "This scene has no logic yet.",
     "",
-    "When the user asks you to BUILD, CHANGE, FIX, or EXTEND scene behavior (interactions, triggers, movement, visibility, colors, etc.), call the apply_scene_logic tool with a clear instruction.",
+    "When the user asks you to BUILD, CHANGE, FIX, or EXTEND scene behavior (interactions, triggers, movement, visibility, colors, touch/proximity, etc.), call the apply_scene_logic tool.",
+    "In the tool instruction, specify: which objects, the trigger (e.g. distance/touch via GetDistanceBetween+Compare), and actions (SetVisible, SetColor, etc.).",
+    "Remind the tool that the result must be a fully wired graph (SceneLoad → SceneLoop → Compare → actions), not a single disconnected node.",
     "When the user asks general questions (explain nodes, brainstorm, how something works, what objects exist), reply in plain text and do NOT call the tool.",
     "Keep replies concise and practical, like an IDE coding assistant.",
   ].join("\n");
@@ -382,10 +334,10 @@ async function generateSceneLogicFromInstruction({
   currentSceneLogic,
   requestId,
 }) {
-  const system = buildSystemPrompt({ objects, currentSceneLogic });
+  const system = buildLogicSystemPrompt({ objects, currentSceneLogic });
   const result = await chatJson({
     system,
-    user: instruction,
+    user: buildLogicUserMessage(instruction),
     requestId,
   });
 
@@ -404,6 +356,14 @@ async function generateSceneLogicFromInstruction({
   const v = validateExportedNodes(parsed);
   if (!v.ok) {
     const err = new Error(v.error);
+    err.status = 400;
+    err.raw = parsed;
+    throw err;
+  }
+
+  const connectivity = validateGraphConnectivity(parsed);
+  if (!connectivity.ok) {
+    const err = new Error(connectivity.error);
     err.status = 400;
     err.raw = parsed;
     throw err;

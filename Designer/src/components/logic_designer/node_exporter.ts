@@ -229,7 +229,17 @@ export async function importIntoEditor(
       if (!fromNode || !toNode) continue;
       // Skip invalid outputs produced by external tools (e.g. AI) to avoid runtime errors
       if (!fromNode.outputs[key]) continue;
-      await editor.addConnection(new BaseConnection(fromNode, key, toNode, 'exec'));
+      // SceneLoad → SceneLoop (and similar) are stored in execOutputs for Unity runtime,
+      // but SceneLoop has no exec input socket in the editor — skip the visual wire only.
+      if (!toNode.inputs.exec) continue;
+      try {
+        await editor.addConnection(new BaseConnection(fromNode, key, toNode, 'exec'));
+      } catch (err) {
+        console.warn(
+          `[importIntoEditor] Skipped exec connection ${nodeId}.${key} → ${toId}:`,
+          err,
+        );
+      }
     }
 
     // Add the data connections
